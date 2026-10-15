@@ -7,22 +7,18 @@ class GavacTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      
-      // Colores principales
       primaryColor: GavacColors.primary,
       scaffoldBackgroundColor: GavacColors.background,
       colorScheme: const ColorScheme.light(
         primary: GavacColors.primary,
         secondary: GavacColors.accent,
         surface: GavacColors.surface,
-        background: GavacColors.background,
         error: GavacColors.dangerText,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: GavacColors.textPrimary,
+        onError: Colors.white,
       ),
-      
-      // Tipografía - Plus Jakarta Sans
       textTheme: GoogleFonts.plusJakartaSansTextTheme(
         const TextTheme(
           displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: GavacColors.textPrimary),
@@ -32,8 +28,6 @@ class GavacTheme {
           bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: GavacColors.textSecondary),
         ),
       ),
-      
-      // Botones
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: GavacColors.primary,
@@ -44,8 +38,6 @@ class GavacTheme {
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
-      
-      // Inputs (TextFields)
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: const Color(0xFFF8FAFC),
