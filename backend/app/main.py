@@ -115,7 +115,11 @@ def request_password_reset(
     db: Session = Depends(get_db),
 ):
     email = str(data.email).lower()
-    user = db.scalar(select(User).where(User.email == email))
+    user = db.scalar(
+        select(User)
+        .where(User.email == email)
+        .with_for_update()
+    )
     if user is None:
         return PASSWORD_RESET_RESPONSE
 
@@ -161,7 +165,11 @@ def request_password_reset(
 )
 def confirm_password_reset(data: PasswordResetConfirm, db: Session = Depends(get_db)):
     email = str(data.email).lower()
-    user = db.scalar(select(User).where(User.email == email))
+    user = db.scalar(
+        select(User)
+        .where(User.email == email)
+        .with_for_update()
+    )
     reset = (
         db.scalar(
             select(PasswordResetCode)
