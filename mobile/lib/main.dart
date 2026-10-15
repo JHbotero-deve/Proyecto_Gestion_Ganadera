@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'core/theme/gavac_theme.dart';
 
 void main() {
   runApp(const GAVACApp());
@@ -12,12 +13,14 @@ class GAVACApp extends StatelessWidget {
     return MaterialApp(
       title: 'GAVAC - Gestión Ganadera',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1A3A32)),
-      ),
+      theme: GavacTheme.lightTheme, // Aquí aplicamos tu tema
       home: const Scaffold(
-        body: Center(child: Text('Base GAVAC Lista')),
+        body: Center(
+          child: Text(
+            'Design System GAVAC Activo',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ),
       ),
     );
   }
