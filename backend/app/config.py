@@ -1,3 +1,4 @@
+import json
 from urllib.parse import urlsplit
 
 from pydantic import Field, SecretStr, field_validator
@@ -17,6 +18,37 @@ class Settings(BaseSettings):
     smtp_from_email: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def validate_database_url(cls, value: object) -> str:
+        if not isinstance(value, str):
+            value = str(value)
+        value = value.strip("'\" \t\r\n")
+        if value.startswith("postgres://"):
+            return value.replace("postgres://", "postgresql+psycopg://", 1)
+        if value.startswith("postgresql://") and not value.startswith("postgresql+psycopg://"):
+            return value.replace("postgresql://", "postgresql+psycopg://", 1)
+        return value
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins_input(cls, value: object) -> str:
+        if value is None:
+            return ""
+        if isinstance(value, list):
+            return ",".join(str(item) for item in value)
+        if isinstance(value, str):
+            val = value.strip()
+            if val.startswith("[") and val.endswith("]"):
+                try:
+                    parsed = json.loads(val)
+                    if isinstance(parsed, list):
+                        return ",".join(str(item) for item in parsed)
+                except Exception:
+                    pass
+            return val
+        return str(value)
 
     @field_validator("cors_origins")
     @classmethod
