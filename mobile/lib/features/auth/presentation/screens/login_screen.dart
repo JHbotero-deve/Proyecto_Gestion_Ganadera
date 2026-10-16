@@ -63,9 +63,9 @@ class _LoginScreenState extends State<LoginScreen> {
           flex: 1,
           child: Container(
             color: const Color(0xFF6B8E85),
-            child: Stack(
+            child: const Stack(
               children: [
-                const Positioned.fill(
+                Positioned.fill(
                   child: Opacity(
                     opacity: 0.3,
                     child: Image(
@@ -74,16 +74,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const Positioned.fill(
+                Positioned.fill(
                   child: ColoredBox(color: Color(0x33000000)),
                 ),
                 Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(48.0),
+                    padding: EdgeInsets.all(48.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
                           appName,
                           style: TextStyle(
@@ -148,9 +148,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text(
+                      const Text(
                         welcomeSubtitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           color: Color(0xFF757575),
                         ),
@@ -270,9 +270,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
+              const Text(
                 welcomeSubtitle,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   color: Color(0xFF757575),
                 ),

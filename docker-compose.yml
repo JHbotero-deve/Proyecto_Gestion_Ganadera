@@ -1,3 +1,4 @@
+
 services:
   db:
     image: postgres:16-alpine
@@ -23,8 +24,8 @@ services:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-ganadero}:${POSTGRES_PASSWORD:-cambiar_esta_clave_local}@db:5432/${POSTGRES_DB:-gestion_ganadera}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-cambiar_por_una_clave_aleatoria_larga_para_produccion}
       JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-60}
-      ENVIRONMENT: ${ENVIRONMENT:-development}
-      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:3000", "http://localhost:5173"]}
     ports:
       - "8000:8000"
     depends_on:
