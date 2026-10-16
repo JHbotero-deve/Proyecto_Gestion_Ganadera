@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../../core/theme/gavac_colors.dart';
+import '../../../../core/utils/app_session.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -39,6 +40,13 @@ class _LoginScreenState extends State<LoginScreen> {
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
+
+      // Asignar datos dinámicos a la sesión basados en el correo ingresado
+      final emailText = _emailController.text.trim();
+      final namePart = emailText.isNotEmpty ? emailText.split('@')[0] : 'Propietario';
+      AppSession.userName = namePart[0].toUpperCase() + namePart.substring(1);
+      AppSession.farmName = 'Finca de ${AppSession.userName}';
+
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           setState(() => _isLoading = false);
