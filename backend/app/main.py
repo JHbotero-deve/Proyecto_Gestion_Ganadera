@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.routers import extras, social_auth
 from app.routers import extras
 
 from app.config import settings
@@ -76,7 +77,7 @@ def register(data: RegisterIn, db: Session = Depends(get_db)):
 @app.post("/api/v1/auth/login", response_model=TokenOut, tags=["Autenticación"])
 def login(data: LoginIn, db: Session = Depends(get_db)):
     user = db.scalar(select(User).where(User.email == str(data.email).lower()))
-    if user is None or not verify_password(data.password, user.password_hash):
+    if user is None or user.password_hash is None or not verify_password(data.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")
     return TokenOut(access_token=create_access_token(user.id))
 
@@ -205,3 +206,4 @@ def create_event(animal_id: int, data: EventCreate, db: Session = Depends(get_db
     return event
 
 app.include_router(extras.router)
+app.include_router(social_auth.router)

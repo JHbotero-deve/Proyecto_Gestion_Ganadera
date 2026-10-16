@@ -7,8 +7,9 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 60
     environment: str = "development"
     cors_origins: list[str] = ["*"]
+    recaptcha_site_key: str = ""
+    recaptcha_secret_key: str = ""
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-
+    model_config = SettingsConfigDict(env_file="../.env", extra="ignore")
 
 settings = Settings()
