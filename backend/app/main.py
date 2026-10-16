@@ -10,6 +10,8 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.routers import extras
+
 from app.config import settings
 from app.db import Base, engine, get_db
 from app.models import Animal, AnimalEvent, Farm, PasswordResetCode, User
@@ -328,3 +330,5 @@ def create_event(animal_id: int, data: EventCreate, db: Session = Depends(get_db
     db.commit()
     db.refresh(event)
     return event
+
+app.include_router(extras.router)
