@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/gavac_colors.dart';
+import '../../../../core/utils/app_session.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -36,6 +37,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _handleRegister() {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
+      
+      // GUARDAR DATOS EN LA MEMORIA TEMPORAL
+      AppSession.userName = _nombreController.text;
+      AppSession.farmName = _fincaController.text;
+      
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           setState(() => _isLoading = false);
