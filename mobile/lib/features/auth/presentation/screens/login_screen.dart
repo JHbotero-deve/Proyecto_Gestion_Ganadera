@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildDesktopLayout() {
     return Row(
       children: [
-        // LADO IZQUIERDO
+        // LADO IZQUIERDO - Imagen de fondo con texto
         Expanded(
           flex: 1,
           child: Container(
@@ -126,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
 
-        // LADO DERECHO
+        // LADO DERECHO - Formulario de Login
         Expanded(
           flex: 1,
           child: Container(
@@ -203,14 +203,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 24),
 
+                      // ✅ CAMBIO INTEGRADO: Navegación al Registro (Escritorio)
                       Center(
                         child: TextButton(
                           onPressed: () {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Registro en desarrollo')),
-                              );
-                            }
+                            Navigator.pushNamed(context, '/register');
                           },
                           child: const Text(
                             registerText,
@@ -327,12 +324,15 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 20),
 
+              // ✅ CAMBIO INTEGRADO: Navegación al Registro (Móvil)
               Center(
                 child: TextButton(
-                  onPressed: () {},
-                  child: Text(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/register');
+                  },
+                  child: const Text(
                     registerText,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: GavacColors.primary,
                       fontWeight: FontWeight.w600,
                     ),
