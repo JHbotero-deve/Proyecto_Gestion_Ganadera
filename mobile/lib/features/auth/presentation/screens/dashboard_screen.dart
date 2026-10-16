@@ -89,7 +89,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     itemBuilder: (context, index) {
                       final isSelected = index == _selectedIndex;
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
                         child: Material(
                           color: isSelected ? Colors.white : Colors.transparent,
                           borderRadius: BorderRadius.circular(12),
@@ -99,20 +100,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               setState(() => _selectedIndex = index);
                             },
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
                               child: Row(
                                 children: [
                                   Icon(
                                     _menuItems[index]['icon'] as IconData,
-                                    color: isSelected ? GavacColors.primary : Colors.white70,
+                                    color: isSelected
+                                        ? GavacColors.primary
+                                        : Colors.white70,
                                     size: 22,
                                   ),
                                   const SizedBox(width: 16),
                                   Text(
                                     _menuItems[index]['label'] as String,
                                     style: TextStyle(
-                                      color: isSelected ? GavacColors.primary : Colors.white70,
-                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                      color: isSelected
+                                          ? GavacColors.primary
+                                          : Colors.white70,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
                                       fontSize: 15,
                                     ),
                                   ),
@@ -135,7 +143,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 // Botón de Salir
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   child: Material(
                     color: Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
@@ -143,7 +152,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       borderRadius: BorderRadius.circular(12),
                       onTap: _handleLogout,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
                         child: Row(
                           children: [
                             const Icon(
@@ -207,23 +217,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         children: [
                           // Selector de Finca
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 10),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(30),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              border:
+                                  Border.all(color: const Color(0xFFE2E8F0)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.location_on_outlined, color: GavacColors.primary, size: 20),
+                                const Icon(Icons.location_on_outlined,
+                                    color: GavacColors.primary, size: 20),
                                 const SizedBox(width: 8),
                                 Text(
                                   AppSession.farmName,
-                                  style: const TextStyle(fontWeight: FontWeight.w600, color: GavacColors.textPrimary),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: GavacColors.textPrimary),
                                 ),
                                 const SizedBox(width: 8),
-                                Icon(Icons.keyboard_arrow_down, color: Colors.grey[600]),
+                                Icon(Icons.keyboard_arrow_down,
+                                    color: Colors.grey[600]),
                               ],
                             ),
                           ),
@@ -234,9 +250,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              border:
+                                  Border.all(color: const Color(0xFFE2E8F0)),
                             ),
-                            child: Icon(Icons.notifications_outlined, color: Colors.grey[600]),
+                            child: Icon(Icons.notifications_outlined,
+                                color: Colors.grey[600]),
                           ),
                         ],
                       ),
@@ -251,7 +269,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
                       image: const DecorationImage(
-                        image: NetworkImage('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'),
+                        image: NetworkImage(
+                            'https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -298,13 +317,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   // Tarjetas de Estadísticas (KPIs)
                   Row(
                     children: [
-                      _buildStatCard('TOTAL ANIMALES', '0', Icons.grid_view, const Color(0xFF64748B), const Color(0xFFF1F5F9)),
+                      _buildStatCard('TOTAL ANIMALES', '0', Icons.grid_view,
+                          const Color(0xFF64748B), const Color(0xFFF1F5F9)),
                       const SizedBox(width: 24),
-                      _buildStatCard('EN SANIDAD', '0', Icons.shield_outlined, const Color(0xFF10B981), const Color(0xFFD1FAE5)),
+                      _buildStatCard('EN SANIDAD', '0', Icons.shield_outlined,
+                          const Color(0xFF10B981), const Color(0xFFD1FAE5)),
                       const SizedBox(width: 24),
-                      _buildStatCard('REPRODUCCIÓN', '0', Icons.favorite_border, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
+                      _buildStatCard('REPRODUCCIÓN', '0', Icons.favorite_border,
+                          const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
                       const SizedBox(width: 24),
-                      _buildStatCard('ALERTAS', '0', Icons.warning_amber_rounded, const Color(0xFFF59E0B), const Color(0xFFFEF3C7)),
+                      _buildStatCard(
+                          'ALERTAS',
+                          '0',
+                          Icons.warning_amber_rounded,
+                          const Color(0xFFF59E0B),
+                          const Color(0xFFFEF3C7)),
                     ],
                   ),
                 ],
@@ -316,7 +343,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color iconColor, Color iconBg) {
+  Widget _buildStatCard(String title, String value, IconData icon,
+      Color iconColor, Color iconBg) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(24),

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import '../../../../core/theme/gavac_colors.dart';
 
@@ -16,9 +17,11 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   static const String appName = 'GAVAC';
-  static const String appSlogan = 'Tecnología inteligente\npara la gestión del campo.';
+  static const String appSlogan =
+      'Tecnología inteligente\npara la gestión del campo.';
   static const String welcomeTitle = 'Bienvenido';
-  static const String welcomeSubtitle = 'Ingresa tus credenciales para acceder.';
+  static const String welcomeSubtitle =
+      'Ingresa tus credenciales para acceder.';
   static const String emailLabel = 'Correo Electrónico';
   static const String emailHint = 'usuario@gavac.pro';
   static const String passwordLabel = 'Contraseña';
@@ -133,7 +136,8 @@ class _LoginScreenState extends State<LoginScreen> {
             color: Colors.white,
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 48),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 64, vertical: 48),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -178,7 +182,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             backgroundColor: GavacColors.primary,
                             foregroundColor: Colors.white,
                             elevation: 8,
-                            shadowColor: GavacColors.primary.withValues(alpha: 0.3),
+                            shadowColor:
+                                GavacColors.primary.withValues(alpha: 0.3),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -189,7 +194,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   width: 24,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2.5,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
                                   ),
                                 )
                               : const Text(
@@ -310,7 +316,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : const Text(
@@ -384,9 +391,11 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: GavacColors.primary, width: 2),
+              borderSide:
+                  const BorderSide(color: GavacColors.primary, width: 2),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -418,10 +427,13 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: InputDecoration(
             hintText: passwordHint,
             hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
-            prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF9E9E9E)),
+            prefixIcon:
+                const Icon(Icons.lock_outline, color: Color(0xFF9E9E9E)),
             suffixIcon: IconButton(
               icon: Icon(
-                _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                _obscurePassword
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
                 color: const Color(0xFF9E9E9E),
               ),
               onPressed: () {
@@ -440,9 +452,11 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: GavacColors.primary, width: 2),
+              borderSide:
+                  const BorderSide(color: GavacColors.primary, width: 2),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
