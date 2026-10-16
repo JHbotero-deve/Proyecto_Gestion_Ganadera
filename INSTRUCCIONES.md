@@ -47,3 +47,4 @@ alembic upgrade head
 ```
 
 En producción, ejecuta `alembic upgrade head` como comando previo al despliegue de la API. El arranque de la aplicación no crea ni modifica tablas fuera del entorno de desarrollo. Si la base ya contiene tablas creadas por una versión anterior que no usaba Alembic, primero verifica su esquema y el estado de migraciones; no marques ni apliques migraciones a ciegas sobre una base existente.
+****

@@ -142,17 +142,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: _handleLogout,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.logout,
                               color: Colors.redAccent,
                               size: 22,
                             ),
-                            const SizedBox(width: 16),
-                            const Text(
+                            SizedBox(width: 16),
+                            Text(
                               'Salir',
                               style: TextStyle(
                                 color: Colors.redAccent,
@@ -262,8 +262,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
                           colors: [
-                            GavacColors.primary.withOpacity(0.95),
-                            GavacColors.primary.withOpacity(0.6),
+                            GavacColors.primary.withValues(alpha: 0.95),
+                            GavacColors.primary.withValues(alpha: 0.6),
                             Colors.transparent,
                           ],
                         ),
@@ -305,9 +305,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _buildStatCard('REPRODUCCIÓN', '0', Icons.favorite_border, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
                       const SizedBox(width: 24),
                       _buildStatCard('ALERTAS', '0', Icons.warning_amber_rounded, const Color(0xFFF59E0B), const Color(0xFFFEF3C7)),
-                    ],
-                  ),
-                ],
+                    ],), ],
               ),
             ),
           ),
@@ -325,7 +323,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
