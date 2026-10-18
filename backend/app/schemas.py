@@ -10,6 +10,21 @@ class RegisterIn(pydantic.BaseModel):
 class LoginIn(pydantic.BaseModel):
     email: pydantic.EmailStr
     password: str
+    captcha_token: str | None = pydantic.Field(default=None, min_length=1, max_length=4096)
+
+
+class AlternateEmailRequest(pydantic.BaseModel):
+    email: pydantic.EmailStr
+
+
+class AlternateEmailConfirm(pydantic.BaseModel):
+    code: str = pydantic.Field(pattern=r"^\d{8}$")
+
+
+class AlternateEmailStatus(pydantic.BaseModel):
+    email: pydantic.EmailStr | None
+    verified: bool
+    pending_email: pydantic.EmailStr | None
 
 
 class PasswordResetRequest(pydantic.BaseModel):

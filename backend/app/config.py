@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = Field(default=60, gt=0)
     environment: str = "development"
     cors_origins: str = ""
+    recaptcha_secret_key: SecretStr = SecretStr("")
+    recaptcha_allowed_hostnames: str = (
+        "proyectogestionganadera-production.up.railway.app,localhost,127.0.0.1,testserver"
+    )
 
     smtp_host: str = ""
     smtp_port: int = Field(default=587, ge=1, le=65535)
@@ -91,6 +95,14 @@ class Settings(BaseSettings):
     @property
     def allowed_cors_origins(self) -> list[str]:
         return [origin for origin in self.cors_origins.split(",") if origin]
+
+    @property
+    def allowed_recaptcha_hostnames(self) -> set[str]:
+        return {
+            hostname.strip().rstrip(".").lower()
+            for hostname in self.recaptcha_allowed_hostnames.split(",")
+            if hostname.strip()
+        }
 
     @property
     def smtp_is_configured(self) -> bool:
