@@ -17,6 +17,8 @@ class GAVACApp extends StatelessWidget {
       title: 'GAVAC - Gestión Ganadera',
       debugShowCheckedModeBanner: false,
       theme: GavacTheme.lightTheme,
+      darkTheme: GavacTheme.darkTheme,
+      themeMode: ThemeMode.system,
       initialRoute: '/login',
       routes: {
         '/login': (context) => const LoginScreen(),

@@ -1,4 +1,3 @@
-from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 import logging
 import secrets
@@ -13,7 +12,7 @@ from sqlalchemy.orm import Session
 from app.routers import extras
 
 from app.config import settings
-from app.db import Base, engine, get_db
+from app.db import get_db
 from app.models import Animal, AnimalEvent, Farm, PasswordResetCode, User
 from app.schemas import (
     RegisterIn,
@@ -52,18 +51,10 @@ def deliver_password_reset_email(email: str, code: str) -> None:
         logger.exception("Password reset email delivery failed")
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    if settings.environment == "development":
-        Base.metadata.create_all(bind=engine)
-    yield
-
-
 app = FastAPI(
     title="Proyecto Gestión Ganadera API",
     version="0.1.0",
     description="API RESTful para la gestión ganadera, fincas, animales e historial de eventos.",
-    lifespan=lifespan,
 )
 
 if settings.allowed_cors_origins:

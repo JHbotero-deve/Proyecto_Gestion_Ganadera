@@ -6,11 +6,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    database_url: str = "postgresql+psycopg://ganadero:cambiar_esta_clave_local@localhost:5432/gestion_ganadera"
+    database_url: str = Field(min_length=1)
     jwt_secret_key: SecretStr = Field(min_length=32)
     jwt_expire_minutes: int = Field(default=60, gt=0)
-    environment: str = "production"
+    environment: str = "development"
     cors_origins: str = ""
+
     smtp_host: str = ""
     smtp_port: int = Field(default=587, ge=1, le=65535)
     smtp_username: str = ""
@@ -45,7 +46,7 @@ class Settings(BaseSettings):
                     parsed = json.loads(val)
                     if isinstance(parsed, list):
                         return ",".join(str(item) for item in parsed)
-                except Exception:
+                except json.JSONDecodeError:
                     pass
             return val
         return str(value)

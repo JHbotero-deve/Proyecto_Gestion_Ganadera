@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db import Base
 
@@ -43,7 +43,10 @@ class Farm(Base):
 
 class Animal(Base):
     __tablename__ = "animals"
-    __table_args__ = (UniqueConstraint("farm_id", "identificador", name="uq_animal_farm_identifier"),)
+    __table_args__ = (
+        UniqueConstraint("farm_id", "identificador", name="uq_animal_farm_identifier"),
+        Index("ix_animals_farm_estado", "farm_id", "estado"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     farm_id: Mapped[int] = mapped_column(ForeignKey("farms.id", ondelete="CASCADE"), index=True, nullable=False)
@@ -62,6 +65,7 @@ class Animal(Base):
 
 class AnimalEvent(Base):
     __tablename__ = "animal_events"
+    __table_args__ = (Index("ix_animal_events_animal_fecha", "animal_id", "fecha"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     animal_id: Mapped[int] = mapped_column(ForeignKey("animals.id", ondelete="CASCADE"), index=True, nullable=False)
