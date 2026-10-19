@@ -1,36 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Modelo ligero para recibir los datos de cada registro desde el Backend.
+/// Modelo ligero para recibir los datos de registros sanitarios desde el Backend.
 class RegistroSanitario {
+  final String id;
   final String codigo;
   final String arete;
-  final String evento;
-  final String fecha;
+  final String tipo; // 'Vacuna' o 'Tratamiento'
+  final String evento; // Ej: Aftosa, Mastitis, Desparasitación
+  final String fechaAplicacion;
+  final String fechaVencimiento;
+  final String dosis;
   final String veterinario;
-  final String estado;
+  final String estado; // 'Vigente', 'Próximo a Vencer', 'Vencido'
   final String tipoEstado; // 'success', 'warning', 'danger', 'info'
 
   const RegistroSanitario({
+    required this.id,
     required this.codigo,
     required this.arete,
+    required this.tipo,
     required this.evento,
-    required this.fecha,
+    required this.fechaAplicacion,
+    required this.fechaVencimiento,
+    required this.dosis,
     required this.veterinario,
     required this.estado,
     required this.tipoEstado,
   });
 }
 
-class SanidadScreen extends StatelessWidget {
-  // Parámetros que llenarán tus compañeros desde el Backend / Controller
+class SanidadScreen extends StatefulWidget {
   final String vacunacionPorcentaje;
   final String controlesPendientes;
   final String alertasSanitarias;
   final List<RegistroSanitario> registros;
-  final VoidCallback? onRegistrarEventoPressed;
-  final ValueChanged<RegistroSanitario>? onVerDetallesPressed;
-  final ValueChanged<RegistroSanitario>? onEditarPressed;
+  final Function(Map<String, String>)? onGuardarVacuna;
+  final Function(Map<String, String>)? onGuardarTratamiento;
 
   const SanidadScreen({
     Key? key,
@@ -38,11 +44,15 @@ class SanidadScreen extends StatelessWidget {
     this.controlesPendientes = '0',
     this.alertasSanitarias = '0',
     this.registros = const [],
-    this.onRegistrarEventoPressed,
-    this.onVerDetallesPressed,
-    this.onEditarPressed,
+    this.onGuardarVacuna,
+    this.onGuardarTratamiento,
   }) : super(key: key);
 
+  @override
+  State<SanidadScreen> createState() => _SanidadScreenState();
+}
+
+class _SanidadScreenState extends State<SanidadScreen> {
   // Colores Oficiales GAVAC Design System
   static const Color primaryColor = Color(0xFF1A3A32); // Deep Forest Green
   static const Color accentColor = Color(0xFF2E5A4D);  // Dark Emerald Accent
@@ -51,13 +61,15 @@ class SanidadScreen extends StatelessWidget {
   static const Color borderColor = Color(0xFFF1F5F9);
   static const Color textMuted = Color(0xFF94A3B8);
 
+  String _filtroSeleccionado = 'Todos'; // 'Todos', 'Vacunas', 'Tratamientos', 'Alertas'
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(32.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -65,7 +77,9 @@ class SanidadScreen extends StatelessWidget {
               const SizedBox(height: 28),
               _buildKpiMetricsRow(),
               const SizedBox(height: 32),
-              _buildDataTableSection(context),
+              _buildAlertasVencimientoSection(), // Criterio 4: Alertas de Vencimiento
+              const SizedBox(height: 32),
+              _buildHistorialSanitarioSection(context), // Criterios 1, 2 y 3
             ],
           ),
         ),
@@ -73,7 +87,7 @@ class SanidadScreen extends StatelessWidget {
     );
   }
 
-  // Encabezado del Módulo
+  // Encabezado principal con botones de acción para Vacunas y Tratamientos
   Widget _buildHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -82,7 +96,7 @@ class SanidadScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Módulo de Sanidad e Intermediación ICA',
+              'Control y Sanidad Ganadera',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
@@ -91,7 +105,7 @@ class SanidadScreen extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Gestión y trazabilidad sanitaria oficial para el control ganadero.',
+              'Gestión de vacunas, tratamientos y alertas de vencimiento oficial ICA.',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -100,61 +114,76 @@ class SanidadScreen extends StatelessWidget {
             ),
           ],
         ),
-        ElevatedButton.icon(
-          onPressed: onRegistrarEventoPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+        Row(
+          children: [
+            // Criterio 1: Registrar Vacunas
+            ElevatedButton.icon(
+              onPressed: () => _mostrarModalRegistrarVacuna(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 0,
+              ),
+              icon: const Icon(Icons.vaccines_rounded, size: 20),
+              label: Text(
+                'Registrar Vacuna',
+                style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700),
+              ),
             ),
-            elevation: 2,
-          ),
-          icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
-          label: Text(
-            'Registrar Evento',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
+            const SizedBox(width: 12),
+            // Criterio 2: Registrar Tratamientos
+            OutlinedButton.icon(
+              onPressed: () => _mostrarModalRegistrarTratamiento(context),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: primaryColor,
+                side: const BorderSide(color: primaryColor, width: 1.5),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              icon: const Icon(Icons.medication_liquid_rounded, size: 20),
+              label: Text(
+                'Registrar Tratamiento',
+                style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700),
+              ),
             ),
-          ),
+          ],
         ),
       ],
     );
   }
 
-  // Tarjetas de Métricas KPI
+  // Métricas KPI
   Widget _buildKpiMetricsRow() {
     return LayoutBuilder(
       builder: (context, constraints) {
         bool isWide = constraints.maxWidth > 900;
         return Flex(
           direction: isWide ? Axis.horizontal : Axis.vertical,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             _buildKpiCard(
               title: 'Vacunación Vigente',
-              value: vacunacionPorcentaje,
-              subtitle: 'Reportado ante el ICA',
+              value: widget.vacunacionPorcentaje,
+              subtitle: 'Esquema oficial reportado',
               icon: Icons.shield_rounded,
               iconBgColor: const Color(0xFFECFDF5),
               iconColor: const Color(0xFF059669),
             ),
             SizedBox(height: isWide ? 0 : 16, width: isWide ? 16 : 0),
             _buildKpiCard(
-              title: 'Controles Pendientes',
-              value: controlesPendientes,
-              subtitle: 'Próximos 30 días',
-              icon: Icons.event_note_rounded,
-              iconBgColor: const Color(0xFFFFFBEB),
-              iconColor: const Color(0xFFD97706),
+              title: 'Tratamientos Activos',
+              value: widget.controlesPendientes,
+              subtitle: 'En seguimiento veterinario',
+              icon: Icons.health_and_safety_rounded,
+              iconBgColor: const Color(0xFFEFF6FF),
+              iconColor: const Color(0xFF2563EB),
             ),
             SizedBox(height: isWide ? 0 : 16, width: isWide ? 16 : 0),
             _buildKpiCard(
-              title: 'Alertas Sanitarias',
-              value: alertasSanitarias,
-              subtitle: 'Requiere atención',
+              title: 'Alertas de Vencimiento',
+              value: widget.alertasSanitarias,
+              subtitle: 'Requiere atención urgente',
               icon: Icons.warning_amber_rounded,
               iconBgColor: const Color(0xFFFEF2F2),
               iconColor: const Color(0xFFDC2626),
@@ -178,7 +207,7 @@ class SanidadScreen extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: cardColor,
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: BorderRadius.circular(28),
           border: Border.all(color: borderColor),
           boxShadow: [
             BoxShadow(
@@ -197,18 +226,18 @@ class SanidadScreen extends StatelessWidget {
                 Text(
                   title,
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: textMuted,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: iconBgColor,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(icon, color: iconColor, size: 24),
+                  child: Icon(icon, color: iconColor, size: 22),
                 ),
               ],
             ),
@@ -216,7 +245,7 @@ class SanidadScreen extends StatelessWidget {
             Text(
               value,
               style: GoogleFonts.plusJakartaSans(
-                fontSize: 40,
+                fontSize: 36,
                 fontWeight: FontWeight.w900,
                 color: primaryColor,
               ),
@@ -236,22 +265,65 @@ class SanidadScreen extends StatelessWidget {
     );
   }
 
-  // Sección de Tabla de Datos
-  Widget _buildDataTableSection(BuildContext context) {
+  // Criterio 4: Banner/Sección de Alertas de Vencimiento
+  Widget _buildAlertasVencimientoSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB), // Amber soft bg
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF59E0B),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.notifications_active_rounded, color: Colors.white, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Control de Alertas de Vencimiento',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF92400E),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'El sistema notificará automáticamente las vacunas y tratamientos próximos a vencer para asegurar el cumplimiento del ciclo ICA.',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFFB45309),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Criterio 3: Historial Sanitario con Filtros
+  Widget _buildHistorialSanitarioSection(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(36),
+        borderRadius: BorderRadius.circular(32),
         border: Border.all(color: borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,22 +332,41 @@ class SanidadScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Historial de Registros Sanitarios',
+                'Historial Sanitario del Ganado',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: primaryColor,
                 ),
               ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.filter_list_rounded, color: primaryColor),
-                tooltip: 'Filtrar registros',
+              // Filtros de navegación
+              Row(
+                children: ['Todos', 'Vacunas', 'Tratamientos'].map((filtro) {
+                  final isSelected = _filtroSeleccionado == filtro;
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: ChoiceChip(
+                      label: Text(filtro),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() => _filtroSeleccionado = filtro);
+                      },
+                      selectedColor: primaryColor,
+                      backgroundColor: backgroundColor,
+                      labelStyle: GoogleFonts.plusJakartaSans(
+                        color: isSelected ? Colors.white : primaryColor,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  );
+                }).toList(),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          registros.isEmpty
+          const SizedBox(height: 20),
+          widget.registros.isEmpty
               ? _buildEmptyState()
               : SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -283,14 +374,16 @@ class SanidadScreen extends StatelessWidget {
               headingRowColor: MaterialStateProperty.all(backgroundColor),
               dataRowHeight: 64,
               columns: [
-                DataColumn(label: _buildTableHeader('CÓDIGO / ARETE')),
-                DataColumn(label: _buildTableHeader('EVENTO SANITARIO')),
-                DataColumn(label: _buildTableHeader('FECHA')),
+                DataColumn(label: _buildTableHeader('ANIMAL / ARETE')),
+                DataColumn(label: _buildTableHeader('TIPO')),
+                DataColumn(label: _buildTableHeader('EVENTO / DIAGNÓSTICO')),
+                DataColumn(label: _buildTableHeader('APLICACIÓN')),
+                DataColumn(label: _buildTableHeader('VENCIMIENTO')),
+                DataColumn(label: _buildTableHeader('DOSIS')),
                 DataColumn(label: _buildTableHeader('VETERINARIO')),
                 DataColumn(label: _buildTableHeader('ESTADO')),
-                DataColumn(label: _buildTableHeader('ACCIONES')),
               ],
-              rows: registros.map((registro) {
+              rows: widget.registros.map((registro) {
                 return DataRow(
                   cells: [
                     DataCell(
@@ -310,7 +403,6 @@ class SanidadScreen extends StatelessWidget {
                             registro.arete,
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 12,
-                              fontWeight: FontWeight.w500,
                               color: textMuted,
                             ),
                           ),
@@ -318,52 +410,28 @@ class SanidadScreen extends StatelessWidget {
                       ),
                     ),
                     DataCell(
-                      Text(
-                        registro.evento,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: registro.tipo == 'Vacuna' ? const Color(0xFFECFDF5) : const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          registro.tipo,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: registro.tipo == 'Vacuna' ? const Color(0xFF059669) : const Color(0xFF2563EB),
+                          ),
                         ),
                       ),
                     ),
-                    DataCell(
-                      Text(
-                        registro.fecha,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-                    DataCell(
-                      Text(
-                        registro.veterinario,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
+                    DataCell(Text(registro.evento, style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600))),
+                    DataCell(Text(registro.fechaAplicacion, style: GoogleFonts.plusJakartaSans(fontSize: 13))),
+                    DataCell(Text(registro.fechaVencimiento, style: GoogleFonts.plusJakartaSans(fontSize: 13))),
+                    DataCell(Text(registro.dosis, style: GoogleFonts.plusJakartaSans(fontSize: 13))),
+                    DataCell(Text(registro.veterinario, style: GoogleFonts.plusJakartaSans(fontSize: 13))),
                     DataCell(_buildStatusBadge(registro.estado, registro.tipoEstado)),
-                    DataCell(
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.visibility_outlined, size: 20, color: accentColor),
-                            onPressed: () => onVerDetallesPressed?.call(registro),
-                            tooltip: 'Ver detalles',
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.edit_outlined, size: 20, color: textMuted),
-                            onPressed: () => onEditarPressed?.call(registro),
-                            tooltip: 'Editar',
-                          ),
-                        ],
-                      ),
-                    ),
                   ],
                 );
               }).toList(),
@@ -377,15 +445,10 @@ class SanidadScreen extends StatelessWidget {
   Widget _buildTableHeader(String title) {
     return Text(
       title,
-      style: GoogleFonts.plusJakartaSans(
-        fontSize: 12,
-        fontWeight: FontWeight.w800,
-        color: textMuted,
-      ),
+      style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w800, color: textMuted),
     );
   }
 
-  // Componente si no hay registros o mientras carga el Backend
   Widget _buildEmptyState() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 40.0),
@@ -396,11 +459,7 @@ class SanidadScreen extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               'No hay registros sanitarios disponibles',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: textMuted,
-              ),
+              style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w600, color: textMuted),
             ),
           ],
         ),
@@ -408,7 +467,6 @@ class SanidadScreen extends StatelessWidget {
     );
   }
 
-  // Badges de Estado
   Widget _buildStatusBadge(String text, String type) {
     Color bgColor;
     Color textColor;
@@ -426,7 +484,6 @@ class SanidadScreen extends StatelessWidget {
         bgColor = const Color(0xFFFEF2F2);
         textColor = const Color(0xFFDC2626);
         break;
-      case 'info':
       default:
         bgColor = const Color(0xFFEFF6FF);
         textColor = const Color(0xFF2563EB);
@@ -434,18 +491,79 @@ class SanidadScreen extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(10)),
       child: Text(
         text,
-        style: GoogleFonts.plusJakartaSans(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: textColor,
+        style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: textColor),
+      ),
+    );
+  }
+
+  // --- MODAL CRITERIO 1: REGISTRAR VACUNA ---
+  void _mostrarModalRegistrarVacuna(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: Text('Registrar Vacuna (HU-007)', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: primaryColor)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(decoration: const InputDecoration(labelText: 'Código Animal / Arete', border: OutlineInputBorder())),
+            const SizedBox(height: 12),
+            TextField(decoration: const InputDecoration(labelText: 'Nombre de la Vacuna (Ej: Aftosa, Brucelosis)', border: OutlineInputBorder())),
+            const SizedBox(height: 12),
+            TextField(decoration: const InputDecoration(labelText: 'Dosis (ml)', border: OutlineInputBorder())),
+            const SizedBox(height: 12),
+            TextField(decoration: const InputDecoration(labelText: 'Fecha de Vencimiento / Próximo Ciclo', border: OutlineInputBorder())),
+          ],
         ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vacuna registrada correctamente')));
+            },
+            child: const Text('Guardar Vacuna', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- MODAL CRITERIO 2: REGISTRAR TRATAMIENTO ---
+  void _mostrarModalRegistrarTratamiento(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: Text('Registrar Tratamiento (HU-007)', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: primaryColor)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(decoration: const InputDecoration(labelText: 'Código Animal / Arete', border: OutlineInputBorder())),
+            const SizedBox(height: 12),
+            TextField(decoration: const InputDecoration(labelText: 'Diagnóstico / Enfermedad', border: OutlineInputBorder())),
+            const SizedBox(height: 12),
+            TextField(decoration: const InputDecoration(labelText: 'Medicamento / Tratamiento', border: OutlineInputBorder())),
+            const SizedBox(height: 12),
+            TextField(decoration: const InputDecoration(labelText: 'Duración (Días) / Vencimiento', border: OutlineInputBorder())),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tratamiento registrado correctamente')));
+            },
+            child: const Text('Guardar Tratamiento', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
   }
