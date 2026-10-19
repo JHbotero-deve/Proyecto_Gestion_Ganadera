@@ -1,19 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
@@ -33,14 +20,49 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
+  <script>
+    (function () {
+      const pending = new Map();
+      const widgets = new Map();
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
+      function publish(name, detail) {
+        window.dispatchEvent(new CustomEvent(name, { detail: JSON.stringify(detail) }));
+      }
+
+      function render(viewId) {
+        const element = document.getElementById("gavac-recaptcha-" + viewId);
+        const options = pending.get(viewId);
+        if (!element || !options || !window.grecaptcha || widgets.has(viewId)) return;
+        widgets.set(viewId, window.grecaptcha.render(element, {
+          sitekey: options.siteKey,
+          callback: function (token) {
+            publish("gavacRecaptchaToken", { viewId: viewId, token: token });
+          },
+          "expired-callback": function () {
+            publish("gavacRecaptchaExpired", { viewId: viewId });
+          },
+          "error-callback": function () {
+            publish("gavacRecaptchaError", { viewId: viewId });
+          }
+        }));
+      }
+
+      window.gavacRecaptchaApiReady = function () {
+        pending.forEach(function (_, viewId) { render(viewId); });
+      };
+      window.gavacRenderRecaptcha = function (viewId, siteKey) {
+        pending.set(viewId, { siteKey: siteKey });
+        if (window.grecaptcha && window.grecaptcha.render) render(viewId);
+      };
+      window.gavacResetRecaptcha = function (viewId) {
+        const widgetId = widgets.get(viewId);
+        if (window.grecaptcha && widgetId !== undefined) window.grecaptcha.reset(widgetId);
+      };
+    })();
+  </script>
+
+  <script src="https://www.google.com/recaptcha/api.js?onload=gavacRecaptchaApiReady&render=explicit" async defer></script>
+  
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

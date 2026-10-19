@@ -1,14 +1,18 @@
 import os
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
+os.environ["ENVIRONMENT"] = "test"
 os.environ.setdefault("JWT_SECRET_KEY", "test-only-secret-key-with-at-least-32-characters")
 
 import pytest
+from app import main as main_module
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.config import settings
+if not settings.database_url.startswith("sqlite:"):
+    raise RuntimeError("Backend tests must never use a remote database")
 settings.database_url = "sqlite:///:memory:"
 
 import app.db as db_module
@@ -23,6 +27,11 @@ db_module.engine = test_engine
 db_module.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
 from app.main import app
+
+
+@pytest.fixture(autouse=True)
+def bypass_external_recaptcha_service(monkeypatch):
+    monkeypatch.setattr(main_module, "verify_recaptcha", lambda _token: None)
 
 
 @pytest.fixture(scope="function")

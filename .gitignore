@@ -19,6 +19,7 @@ htmlcov/
 # IDEs y editores
 .idea/
 .vscode/
+.run/
 *.swp
 *.swo
 
@@ -26,6 +27,8 @@ htmlcov/
 *.backup-*
 *.tmp
 archivo.csv
+.artifacts/
+build_web/
 
 # Flutter / Mobile
 mobile/.dart_tool/
@@ -38,3 +41,5 @@ mobile/build/
 # Sistema
 .DS_Store
 Thumbs.db
+node_modules/
+package-lock.json

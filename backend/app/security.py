@@ -28,6 +28,10 @@ def create_access_token(user_id: int, token_version: int = 0) -> str:
 
 
 def hash_password_reset_code(user_id: int, code: str) -> str:
-    payload = f"{user_id}:{code}".encode()
+    return hash_one_time_code("password-reset", user_id, code)
+
+
+def hash_one_time_code(purpose: str, user_id: int, code: str) -> str:
+    payload = f"{purpose}:{user_id}:{code}".encode()
     secret = settings.jwt_secret_key.get_secret_value().encode()
     return hmac.new(secret, payload, hashlib.sha256).hexdigest()

@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../../../../core/theme/gavac_colors.dart';
 import '../../../../core/utils/app_session.dart';
 import 'sanidad_screen.dart';
+
+const _apiBaseUrl = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'https://proyectogestionganadera-production.up.railway.app',
+);
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -68,6 +75,147 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _manageAlternateEmail() async {
+    final token = AppSession.accessToken;
+    if (token == null) {
+      _showMessage('La sesión venció. Inicia sesión de nuevo.');
+      return;
+    }
+
+    final emailController = TextEditingController();
+    final codeController = TextEditingController();
+    var codeSent = false;
+    var verifiedEmail = '';
+    var busy = true;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          if (busy && verifiedEmail.isEmpty && !codeSent) {
+            http.get(
+              Uri.parse('$_apiBaseUrl/api/v1/auth/alternate-email'),
+              headers: {'Authorization': 'Bearer $token'},
+            ).then((response) {
+              if (response.statusCode == 200 && context.mounted) {
+                final data = jsonDecode(response.body) as Map<String, dynamic>;
+                setDialogState(() {
+                  final email = data['email'] as String?;
+                  verifiedEmail = data['verified'] == true && email != null ? email : '';
+                  if (verifiedEmail.isNotEmpty) emailController.text = verifiedEmail;
+                  busy = false;
+                });
+              } else if (context.mounted) {
+                setDialogState(() => busy = false);
+                _showMessage('No se pudo consultar el correo alternativo.');
+              }
+            }).catchError((Object _) {
+              if (context.mounted) {
+                setDialogState(() => busy = false);
+                _showMessage('No se pudo conectar con el servicio.');
+              }
+            });
+          }
+
+          return AlertDialog(
+            title: const Text('Correo alternativo'),
+            content: busy
+                ? const SizedBox(
+                    height: 64,
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (verifiedEmail.isNotEmpty)
+                        Text('Correo verificado: $verifiedEmail')
+                      else ...[
+                        TextField(
+                          controller: emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: const InputDecoration(
+                            labelText: 'Correo alternativo',
+                          ),
+                        ),
+                        if (codeSent)
+                          TextField(
+                            controller: codeController,
+                            keyboardType: TextInputType.number,
+                            maxLength: 8,
+                            decoration: const InputDecoration(
+                              labelText: 'Código enviado al correo',
+                            ),
+                          ),
+                      ],
+                    ],
+                  ),
+            actions: [
+              TextButton(
+                onPressed: busy ? null : () => Navigator.pop(dialogContext),
+                child: const Text('Cerrar'),
+              ),
+              if (!busy && verifiedEmail.isEmpty)
+                FilledButton(
+                  onPressed: () async {
+                    if (emailController.text.trim().isEmpty ||
+                        (codeSent && codeController.text.trim().length != 8)) {
+                      _showMessage('Completa el correo y el código de verificación.');
+                      return;
+                    }
+                    setDialogState(() => busy = true);
+                    try {
+                      final response = await http.post(
+                        Uri.parse(
+                          '$_apiBaseUrl/api/v1/auth/alternate-email/${codeSent ? 'confirm' : 'request'}',
+                        ),
+                        headers: {
+                          'Authorization': 'Bearer $token',
+                          'Content-Type': 'application/json',
+                        },
+                        body: jsonEncode(
+                          codeSent
+                              ? {'code': codeController.text.trim()}
+                              : {'email': emailController.text.trim()},
+                        ),
+                      );
+                      if (!context.mounted) return;
+                      if (response.statusCode == 200) {
+                        setDialogState(() {
+                          verifiedEmail = emailController.text.trim();
+                          busy = false;
+                        });
+                      } else if (response.statusCode == 202) {
+                        setDialogState(() {
+                          codeSent = true;
+                          busy = false;
+                        });
+                        _showMessage('Enviamos un código para verificar el correo.');
+                      } else {
+                        setDialogState(() => busy = false);
+                        _showMessage('No se pudo verificar el correo. Revisa los datos e inténtalo de nuevo.');
+                      }
+                    } on http.ClientException {
+                      if (context.mounted) {
+                        setDialogState(() => busy = false);
+                        _showMessage('No se pudo conectar con el servicio.');
+                      }
+                    }
+                  },
+                  child: Text(codeSent ? 'Verificar' : 'Enviar código'),
+                ),
+            ],
+          );
+        },
+      ),
+    );
+    emailController.dispose();
+    codeController.dispose();
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -160,17 +308,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: _handleLogout,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.logout,
                               color: Colors.redAccent,
                               size: 22,
                             ),
-                            const SizedBox(width: 16),
-                            const Text(
+                            SizedBox(width: 16),
+                            Text(
                               'Salir',
                               style: TextStyle(
                                 color: Colors.redAccent,
@@ -181,6 +329,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ],
                         ),
                       ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: TextButton.icon(
+                    onPressed: _manageAlternateEmail,
+                    icon: const Icon(Icons.alternate_email, color: Colors.white70),
+                    label: const Text(
+                      'Correo alternativo',
+                      style: TextStyle(color: Colors.white70),
                     ),
                   ),
                 ),
