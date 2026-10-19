@@ -93,7 +93,7 @@ class _AnimalesScreenState extends State<AnimalesScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Control individual de ganado mediante chapeta única y sincronización offline/online[cite: 12, 13].',
+              'Control individual de ganado mediante chapeta única y sincronización offline/online.',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -151,7 +151,7 @@ class _AnimalesScreenState extends State<AnimalesScreen> {
             _buildKpiCard(
               title: 'Pendientes Local',
               value: widget.pendientesCount,
-              subtitle: 'A la espera de conexión[cite: 12]',
+              subtitle: 'A la espera de conexión',
               icon: Icons.cloud_off_rounded,
               iconBgColor: const Color(0xFFFFFBEB),
               iconColor: const Color(0xFFD97706),
@@ -277,8 +277,9 @@ class _AnimalesScreenState extends State<AnimalesScreen> {
               : SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
-              headingRowColor: MaterialStateProperty.all(backgroundColor),
-              dataRowHeight: 64,
+              headingRowColor: WidgetStateProperty.all(backgroundColor),
+              dataRowMinHeight: 64,
+              dataRowMaxHeight: 64,
               columns: [
                 DataColumn(label: _buildTableHeader('CHAPETA ÚNICA')),
                 DataColumn(label: _buildTableHeader('ESPECIE')),
@@ -286,7 +287,7 @@ class _AnimalesScreenState extends State<AnimalesScreen> {
                 DataColumn(label: _buildTableHeader('SEXO')),
                 DataColumn(label: _buildTableHeader('EDAD')),
                 DataColumn(label: _buildTableHeader('PESO')),
-                DataColumn(label: _buildTableHeader('ESTADO SINCRONIZACIÓN[cite: 12]')),
+                DataColumn(label: _buildTableHeader('ESTADO SINCRONIZACIÓN')),
               ],
               rows: widget.animales.map((animal) {
                 return DataRow(
@@ -376,99 +377,99 @@ class _AnimalesScreenState extends State<AnimalesScreen> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
         title: Text(
-            'Registrar Nuevo Animal (HU-006)',[cite: 13]
-            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: primaryColor),
-      ),
-      content: SizedBox(
-        width: 400,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Chapeta / Arete Único[cite: 13]',
-                filled: true,
-                fillColor: const Color(0xFFF8FAFC),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+          'Registrar Nuevo Animal (HU-006)',
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: primaryColor),
+        ),
+        content: SizedBox(
+          width: 400,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Chapeta / Arete Único',
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Especie (Ej: Bovino, Bufalino)',[cite: 13]
-                filled: true,
-                fillColor: const Color(0xFFF8FAFC),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+              const SizedBox(height: 12),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Especie (Ej: Bovino, Bufalino)',
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Raza (Ej: Brahman, Holstein)',[cite: 13]
-                filled: true,
-                fillColor: const Color(0xFFF8FAFC),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+              const SizedBox(height: 12),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Raza (Ej: Brahman, Holstein)',
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Sexo[cite: 13]',
-                      filled: true,
-                      fillColor: const Color(0xFFF8FAFC),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        labelText: 'Sexo',
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Edad[cite: 13]',
-                      filled: true,
-                      fillColor: const Color(0xFFF8FAFC),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        labelText: 'Edad',
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Peso (kg)[cite: 13]',
-                filled: true,
-                fillColor: const Color(0xFFF8FAFC),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                ],
               ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text('Cancelar', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, color: textMuted)),
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              const SizedBox(height: 12),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Peso (kg)',
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                ),
+              ),
+            ],
           ),
-          onPressed: () {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Animal registrado localmente / Sincronizado[cite: 12]')),
-            );
-          },
-          child: Text('Guardar Animal[cite: 12]', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w700)),
         ),
-      ],
-    ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, color: textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Animal registrado localmente / Sincronizado')),
+              );
+            },
+            child: Text('Guardar Animal', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
     );
   }
 }
