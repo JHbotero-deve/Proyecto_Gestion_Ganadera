@@ -1,21 +1,24 @@
-import 'package:flutter/material.dart';
-
+﻿import 'package:flutter/material.dart';
 import 'captcha_widget_stub.dart'
-    if (dart.library.js_interop) 'captcha_widget_web.dart' as platform;
+    if (dart.library.html) 'captcha_widget_web.dart' as platform;
 
 class CaptchaWidget extends StatelessWidget {
   const CaptchaWidget({
     super.key,
     required this.onToken,
-    required this.onResetReady,
+    this.onTokenReceived,
+    this.onResetReady,
   });
 
   final ValueChanged<String?> onToken;
-  final ValueChanged<VoidCallback> onResetReady;
+  final ValueChanged<String?>? onTokenReceived;
+  final ValueChanged<VoidCallback>? onResetReady;
 
   @override
-  Widget build(BuildContext context) => platform.buildCaptchaWidget(
-        onToken: onToken,
-        onResetReady: onResetReady,
-      );
+  Widget build(BuildContext context) {
+    return platform.buildCaptchaWidget(
+      onToken: onTokenReceived ?? onToken,
+      onResetReady: onResetReady ?? (_) {},
+    );
+  }
 }

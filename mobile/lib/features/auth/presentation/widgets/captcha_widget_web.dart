@@ -1,18 +1,23 @@
+﻿// ignore_for_file: avoid_web_libraries_in_flutter, deprecated_member_use
+
 import 'dart:convert';
+import 'dart:html' as html;
 import 'dart:js_interop';
 import 'dart:ui_web' as ui_web;
 
 import 'package:flutter/material.dart';
-import 'package:web/web.dart' as web;
 
-const _siteKey = String.fromEnvironment('RECAPTCHA_SITE_KEY');
+const _siteKey = String.fromEnvironment(
+  'RECAPTCHA_SITE_KEY',
+  defaultValue: '6LePfPItAAAAAIibRFbVkkQtat6NQBWZ1Rwj_fI2',
+);
 const _viewType = 'gavac-recaptcha-v2';
 
 @JS('gavacRenderRecaptcha')
-external void _renderRecaptcha(JSNumber viewId, JSString siteKey);
+external void _renderRecaptcha(int viewId, String siteKey);
 
 @JS('gavacResetRecaptcha')
-external void _resetRecaptcha(JSNumber viewId);
+external void _resetRecaptcha(int viewId);
 
 Widget buildCaptchaWidget({
   required ValueChanged<String?> onToken,
@@ -20,16 +25,22 @@ Widget buildCaptchaWidget({
 }) {
   if (_siteKey.isEmpty) {
     return const Text(
-      'Falta configurar RECAPTCHA_SITE_KEY para compilar la versión web.',
+      'Falta RECAPTCHA_SITE_KEY. Compila usando --dart-define.',
       style: TextStyle(color: Colors.red),
     );
   }
 
-  return _CaptchaView(onToken: onToken, onResetReady: onResetReady);
+  return _CaptchaView(
+    onToken: onToken,
+    onResetReady: onResetReady,
+  );
 }
 
 class _CaptchaView extends StatefulWidget {
-  const _CaptchaView({required this.onToken, required this.onResetReady});
+  const _CaptchaView({
+    required this.onToken,
+    required this.onResetReady,
+  });
 
   final ValueChanged<String?> onToken;
   final ValueChanged<VoidCallback> onResetReady;
@@ -39,81 +50,119 @@ class _CaptchaView extends StatefulWidget {
 }
 
 class _CaptchaViewState extends State<_CaptchaView> {
-  late final int _viewId = _CaptchaViewState._registerView();
-  late final web.EventListener _tokenListener = _handleToken.toJS;
-  late final web.EventListener _expiredListener = _handleExpired.toJS;
-  late final web.EventListener _errorListener = _handleError.toJS;
+  static int _nextId = 0;
 
-  static int _nextViewId = 0;
+  late final int _id;
+  late final String _type;
+  late final html.DivElement _element;
 
-  static int _registerView() {
-    final id = _nextViewId++;
-    ui_web.platformViewRegistry.registerViewFactory(
-      '$_viewType-$id',
-      (_) => web.HTMLDivElement()..id = 'gavac-recaptcha-$id',
-    );
-    return id;
-  }
+  late final html.EventListener _tokenListener;
+  late final html.EventListener _expiredListener;
+  late final html.EventListener _errorListener;
+
+  bool _disposed = false;
 
   @override
   void initState() {
     super.initState();
-    web.window.addEventListener('gavacRecaptchaToken', _tokenListener);
-    web.window.addEventListener('gavacRecaptchaExpired', _expiredListener);
-    web.window.addEventListener('gavacRecaptchaError', _errorListener);
+
+    _id = _nextId++;
+    _type = '$_viewType-$_id';
+
+    _element = html.DivElement()
+      ..id = 'gavac-recaptcha-$_id'
+      ..style.width = '304px'
+      ..style.height = '78px'
+      ..style.display = 'block';
+
+    ui_web.platformViewRegistry.registerViewFactory(
+      _type,
+      (int viewId) => _element,
+    );
+
+    _tokenListener = (html.Event event) {
+      final data = _readDetail(event);
+      if (data == null || data['viewId'].toString() != '$_id') return;
+      final token = data['token'];
+      if (token is String && token.isNotEmpty && !_disposed) {
+        widget.onToken(token);
+      }
+    };
+
+    _expiredListener = (html.Event event) {
+      final data = _readDetail(event);
+      if (data != null &&
+          data['viewId'].toString() == '$_id' &&
+          !_disposed) {
+        widget.onToken(null);
+      }
+    };
+
+    _errorListener = (html.Event event) {
+      final data = _readDetail(event);
+      if (data != null &&
+          data['viewId'].toString() == '$_id' &&
+          !_disposed) {
+        widget.onToken(null);
+      }
+    };
+
+    html.window.addEventListener('gavacRecaptchaToken', _tokenListener);
+    html.window.addEventListener('gavacRecaptchaExpired', _expiredListener);
+    html.window.addEventListener('gavacRecaptchaError', _errorListener);
+
     widget.onResetReady(reset);
   }
 
-  void _renderCaptcha(int _) {
-    _renderRecaptcha(_viewId.toJS, _siteKey.toJS);
-  }
+  Map<String, dynamic>? _readDetail(html.Event event) {
+    try {
+      if (event is! html.CustomEvent) return null;
+      final dynamic raw = event.detail;
 
-  void _handleToken(web.Event event) {
-    final detail =
-        jsonDecode(((event as web.CustomEvent).detail! as JSString).toDart);
-    if (detail is Map<String, dynamic> &&
-        detail['viewId'] == _viewId &&
-        detail['token'] is String) {
-      widget.onToken(detail['token'] as String);
+      if (raw is String) {
+        final decoded = jsonDecode(raw);
+        return decoded is Map<String, dynamic> ? decoded : null;
+      }
+      return null;
+    } catch (_) {
+      return null;
     }
   }
 
-  void _handleExpired(web.Event event) {
-    final detail =
-        jsonDecode(((event as web.CustomEvent).detail! as JSString).toDart);
-    if (detail is Map<String, dynamic> && detail['viewId'] == _viewId) {
-      widget.onToken(null);
-    }
-  }
-
-  void _handleError(web.Event event) {
-    final detail =
-        jsonDecode(((event as web.CustomEvent).detail! as JSString).toDart);
-    if (detail is Map<String, dynamic> && detail['viewId'] == _viewId) {
-      widget.onToken(null);
+  void _render(int _) {
+    try {
+      _renderRecaptcha(_id, _siteKey);
+    } catch (error) {
+      debugPrint('Error al cargar reCAPTCHA: $error');
     }
   }
 
   void reset() {
-    _resetRecaptcha(_viewId.toJS);
+    try {
+      _resetRecaptcha(_id);
+    } catch (error) {
+      debugPrint('Error al reiniciar reCAPTCHA: $error');
+    }
     widget.onToken(null);
   }
 
   @override
   void dispose() {
-    web.window.removeEventListener('gavacRecaptchaToken', _tokenListener);
-    web.window.removeEventListener('gavacRecaptchaExpired', _expiredListener);
-    web.window.removeEventListener('gavacRecaptchaError', _errorListener);
+    _disposed = true;
+    html.window.removeEventListener('gavacRecaptchaToken', _tokenListener);
+    html.window.removeEventListener('gavacRecaptchaExpired', _expiredListener);
+    html.window.removeEventListener('gavacRecaptchaError', _errorListener);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 80,
+      width: 304,
+      height: 85,
       child: HtmlElementView(
-        viewType: '$_viewType-$_viewId',
-        onPlatformViewCreated: _renderCaptcha,
+        viewType: _type,
+        onPlatformViewCreated: _render,
       ),
     );
   }
