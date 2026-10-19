@@ -1,7 +1,7 @@
 ﻿# Contrato inicial de API
 
 ## Estado
-Propuesta preliminar. Estas rutas no están implementadas.
+Contrato inicial en evolución. Las rutas de recuperación de contraseña descritas aquí están implementadas; las demás rutas siguen sujetas a revisión de su estado en el backend.
 
 ## Convenciones
 - Prefijo propuesto: /api/v1.
@@ -12,6 +12,8 @@ Propuesta preliminar. Estas rutas no están implementadas.
 
 ## Rutas candidatas
 - POST /api/v1/auth/login
+- POST /api/v1/auth/password-reset/request
+- POST /api/v1/auth/password-reset/confirm
 - POST /api/v1/auth/logout
 - GET /api/v1/farms
 - POST /api/v1/farms
@@ -32,7 +34,14 @@ Propuesta preliminar. Estas rutas no están implementadas.
 - Paginación y filtros.
 - Idempotencia y operaciones duplicadas.
 - Versionado y resolución de conflictos offline.
-- Renovación y revocación de sesiones.
+- Renovación de sesiones y cierre de sesión.
+
+## Recuperación de contraseña
+- `POST /api/v1/auth/password-reset/request` recibe `email` y devuelve la misma respuesta genérica exista o no la cuenta. El correo solo se entrega si SMTP está configurado.
+- `POST /api/v1/auth/password-reset/confirm` recibe `email`, `code` de ocho dígitos y `new_password` de 10 a 128 caracteres. El código vence a los 10 minutos, permite hasta cinco intentos y se invalida después de usarse.
+- Las solicitudes de código se limitan a una por minuto por cuenta.
+- La sesión JWT vence a los 60 minutos desde su emisión, independientemente de la actividad.
+- Estas rutas ya están implementadas; SMTP debe configurarse como variables de entorno del backend.
 
 ## Pruebas mínimas
 - Solicitudes válidas e inválidas.
