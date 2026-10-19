@@ -145,7 +145,7 @@ class _AnimalesScreenState extends State<AnimalesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'HU-006: Registro de Animales',
+              'Registro de Animales',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
