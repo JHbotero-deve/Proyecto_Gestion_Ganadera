@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/gavac_colors.dart';
 import '../../../../core/utils/app_session.dart';
+import 'sanidad_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -22,6 +23,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     {'icon': Icons.bar_chart_outlined, 'label': 'Reportes'},
     {'icon': Icons.admin_panel_settings_outlined, 'label': 'Admin'},
   ];
+
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      _buildInicioView(),             // 0: Inicio
+      _buildPlaceholder('Animales'),   // 1: Animales
+      const SanidadScreen(),          // 2: Sanidad
+      _buildPlaceholder('Reproducción'),// 3: Reproducción
+      _buildPlaceholder('Producción'),  // 4: Producción
+      _buildPlaceholder('Inventario'),  // 5: Inventario
+      _buildPlaceholder('Reportes'),    // 6: Reportes
+      _buildPlaceholder('Admin'),       // 7: Admin
+    ];
+  }
 
   // Función para cerrar sesión
   void _handleLogout() {
@@ -171,144 +189,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
 
-          // CONTENIDO PRINCIPAL
+          // CONTENIDO PRINCIPAL DINÁMICO
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(32.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header Superior
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Inicio',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w800,
-                              color: GavacColors.primary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Resumen general de tu finca',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          // Selector de Finca
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(30),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.location_on_outlined, color: GavacColors.primary, size: 20),
-                                const SizedBox(width: 8),
-                                Text(
-                                  AppSession.farmName,
-                                  style: const TextStyle(fontWeight: FontWeight.w600, color: GavacColors.textPrimary),
-                                ),
-                                const SizedBox(width: 8),
-                                Icon(Icons.keyboard_arrow_down, color: Colors.grey[600]),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          // Campana Notificaciones
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
-                            ),
-                            child: Icon(Icons.notifications_outlined, color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Banner de Bienvenida
-                  Container(
-                    width: double.infinity,
-                    height: 220,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
-                      image: const DecorationImage(
-                        image: NetworkImage('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
-                        gradient: LinearGradient(
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                          colors: [
-                            GavacColors.primary.withOpacity(0.95),
-                            GavacColors.primary.withOpacity(0.6),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                      padding: const EdgeInsets.all(40),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Bienvenido, ${AppSession.userName}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 32,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Este es el estado actual de tu\nactivo ganadero hoy.',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Tarjetas de Estadísticas (KPIs)
-                  Row(
-                    children: [
-                      _buildStatCard('TOTAL ANIMALES', '0', Icons.grid_view, const Color(0xFF64748B), const Color(0xFFF1F5F9)),
-                      const SizedBox(width: 24),
-                      _buildStatCard('EN SANIDAD', '0', Icons.shield_outlined, const Color(0xFF10B981), const Color(0xFFD1FAE5)),
-                      const SizedBox(width: 24),
-                      _buildStatCard('REPRODUCCIÓN', '0', Icons.favorite_border, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
-                      const SizedBox(width: 24),
-                      _buildStatCard('ALERTAS', '0', Icons.warning_amber_rounded, const Color(0xFFF59E0B), const Color(0xFFFEF3C7)),
-                    ],
-                  ),
-                ],
-              ),
+            child: IndexedStack(
+              index: _selectedIndex,
+              children: _pages,
             ),
           ),
         ],
@@ -316,59 +201,220 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color iconColor, Color iconBg) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: iconBg,
-                    borderRadius: BorderRadius.circular(12),
+  // Vista de Inicio
+  Widget _buildInicioView() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(32.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Superior
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Inicio',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      color: GavacColors.primary,
+                    ),
                   ),
-                  child: Icon(icon, color: iconColor, size: 24),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Resumen general de tu finca',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  // Selector de Finca
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.location_on_outlined, color: GavacColors.primary, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          AppSession.farmName,
+                          style: const TextStyle(fontWeight: FontWeight.w600, color: GavacColors.textPrimary),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(Icons.keyboard_arrow_down, color: Colors.grey[600]),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  // Campana Notificaciones
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Icon(Icons.notifications_outlined, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+
+          // Banner de Bienvenida
+          Container(
+            width: double.infinity,
+            height: 220,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              image: const DecorationImage(
+                image: NetworkImage('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    GavacColors.primary.withOpacity(0.95),
+                    GavacColors.primary.withOpacity(0.6),
+                    Colors.transparent,
+                  ],
                 ),
-                Icon(Icons.more_horiz, color: Colors.grey[400]),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: Colors.grey[600],
-                letterSpacing: 0.5,
+              ),
+              padding: const EdgeInsets.all(40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Bienvenido, ${AppSession.userName}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Este es el estado actual de tu\nactivo ganadero hoy.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.w800,
-                color: GavacColors.primary,
+          ),
+          const SizedBox(height: 32),
+
+          // Tarjetas de Estadísticas (KPIs)
+          Row(
+            children: [
+              _buildStatCard('TOTAL ANIMALES', '0', Icons.grid_view, const Color(0xFF64748B), const Color(0xFFF1F5F9)),
+              const SizedBox(width: 24),
+              _buildStatCard(
+                'EN SANIDAD',
+                '0',
+                Icons.shield_outlined,
+                const Color(0xFF10B981),
+                const Color(0xFFD1FAE5),
+                onTap: () => setState(() => _selectedIndex = 2),
               ),
-            ),
-          ],
+              const SizedBox(width: 24),
+              _buildStatCard('REPRODUCCIÓN', '0', Icons.favorite_border, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
+              const SizedBox(width: 24),
+              _buildStatCard('ALERTAS', '0', Icons.warning_amber_rounded, const Color(0xFFF59E0B), const Color(0xFFFEF3C7)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String title, String value, IconData icon, Color iconColor, Color iconBg, {VoidCallback? onTap}) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: iconBg,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(icon, color: iconColor, size: 24),
+                  ),
+                  Icon(Icons.more_horiz, color: Colors.grey[400]),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.grey[600],
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  color: GavacColors.primary,
+                ),
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder(String title) {
+    return Center(
+      child: Text(
+        'Módulo de $title',
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.grey[600]),
       ),
     );
   }
