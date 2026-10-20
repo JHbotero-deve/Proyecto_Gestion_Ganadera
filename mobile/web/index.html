@@ -29,10 +29,32 @@
         window.dispatchEvent(new CustomEvent(name, { detail: JSON.stringify(detail) }));
       }
 
+      function findRecaptchaElement(viewId) {
+        const targetId = "gavac-recaptcha-" + viewId;
+
+        // 1. Búsqueda directa en document
+        let el = document.getElementById(targetId);
+        if (el) return el;
+
+        // 2. Búsqueda dentro del Shadow Root de Flutter Web (flt-glass-pane)
+        const shadowHosts = document.querySelectorAll("flt-glass-pane, flutter-view");
+        for (let i = 0; i < shadowHosts.length; i++) {
+          if (shadowHosts[i].shadowRoot) {
+            el = shadowHosts[i].shadowRoot.getElementById(targetId) ||
+                 shadowHosts[i].shadowRoot.querySelector("#" + targetId);
+            if (el) return el;
+          }
+        }
+
+        // 3. Query selector global
+        return document.querySelector("#" + targetId);
+      }
+
       function render(viewId) {
-        const element = document.getElementById("gavac-recaptcha-" + viewId);
+        const element = findRecaptchaElement(viewId);
         const options = pending.get(viewId);
         if (!element || !options || !window.grecaptcha || widgets.has(viewId)) return;
+
         widgets.set(viewId, window.grecaptcha.render(element, {
           sitekey: options.siteKey,
           callback: function (token) {
@@ -50,13 +72,26 @@
       window.gavacRecaptchaApiReady = function () {
         pending.forEach(function (_, viewId) { render(viewId); });
       };
+
       window.gavacRenderRecaptcha = function (viewId, siteKey) {
         pending.set(viewId, { siteKey: siteKey });
-        if (window.grecaptcha && window.grecaptcha.render) render(viewId);
+        let attempts = 0;
+        function tryRender() {
+          const el = findRecaptchaElement(viewId);
+          if (el && window.grecaptcha && window.grecaptcha.render) {
+            render(viewId);
+          } else if (attempts++ < 15) {
+            setTimeout(tryRender, 100);
+          }
+        }
+        tryRender();
       };
+
       window.gavacResetRecaptcha = function (viewId) {
         const widgetId = widgets.get(viewId);
-        if (window.grecaptcha && widgetId !== undefined) window.grecaptcha.reset(widgetId);
+        if (window.grecaptcha && widgetId !== undefined) {
+          window.grecaptcha.reset(widgetId);
+        }
       };
     })();
   </script>
