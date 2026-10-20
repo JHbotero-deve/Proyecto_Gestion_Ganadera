@@ -255,7 +255,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     itemBuilder: (context, index) {
                       final isSelected = index == _selectedIndex;
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
                         child: Material(
                           color: isSelected ? Colors.white : Colors.transparent,
                           borderRadius: BorderRadius.circular(12),
@@ -265,20 +266,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               setState(() => _selectedIndex = index);
                             },
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
                               child: Row(
                                 children: [
                                   Icon(
                                     _menuItems[index]['icon'] as IconData,
-                                    color: isSelected ? GavacColors.primary : Colors.white70,
+                                    color: isSelected
+                                        ? GavacColors.primary
+                                        : Colors.white70,
                                     size: 22,
                                   ),
                                   const SizedBox(width: 16),
                                   Text(
                                     _menuItems[index]['label'] as String,
                                     style: TextStyle(
-                                      color: isSelected ? GavacColors.primary : Colors.white70,
-                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                      color: isSelected
+                                          ? GavacColors.primary
+                                          : Colors.white70,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
                                       fontSize: 15,
                                     ),
                                   ),
@@ -301,7 +309,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 // Botón de Salir
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   child: Material(
                     color: Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
