@@ -1,6 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../../../../core/theme/gavac_colors.dart';
 import '../../../../core/utils/app_session.dart';
+
+const _apiBaseUrl = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'https://proyectogestionganadera-production.up.railway.app',
+);
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -35,27 +42,90 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _handleRegister() {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+  Future<void> _handleRegister() async {
+    if (!_formKey.currentState!.validate()) return;
 
-      // GUARDAR DATOS EN LA MEMORIA TEMPORAL
-      AppSession.userName = _nombreController.text;
-      AppSession.farmName = _fincaController.text;
-
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Cuenta creada exitosamente. Inicia sesión.'),
-              backgroundColor: GavacColors.successText,
-            ),
-          );
-          Navigator.pushReplacementNamed(context, '/login');
-        }
-      });
+    if (_passwordController.text != _confirmPasswordController.text) {
+      _showMessage('Las contraseñas no coinciden.');
+      return;
     }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // 1. Registro de Usuario en PostgreSQL
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/api/v1/auth/register'),
+        headers: const {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'nombre': _nombreController.text.trim(),
+          'email': _emailController.text.trim(),
+          'password': _passwordController.text,
+        }),
+      );
+
+      if (!mounted) return;
+
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final token = data['access_token'] as String;
+
+        AppSession.accessToken = token;
+        AppSession.userName = _nombreController.text.trim();
+
+        // 2. Creación de la Finca asociada en PostgreSQL
+        if (_fincaController.text.trim().isNotEmpty) {
+          try {
+            final farmResponse = await http.post(
+              Uri.parse('$_apiBaseUrl/api/v1/farms'),
+              headers: {
+                'Authorization': 'Bearer $token',
+                'Content-Type': 'application/json',
+              },
+              body: jsonEncode({
+                'nombre': _fincaController.text.trim(),
+                'ubicacion': '',
+              }),
+            );
+            if (farmResponse.statusCode == 201) {
+              final farmData = jsonDecode(farmResponse.body) as Map<String, dynamic>;
+              AppSession.farmName = farmData['nombre'] as String? ?? _fincaController.text.trim();
+            }
+          } catch (_) {
+            // Ignorar si falla la finca opcional, la sesión continuará
+          }
+        }
+
+        _showMessage('¡Cuenta creada e inscrita en la base de datos!');
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/dashboard');
+        }
+      } else if (response.statusCode == 409) {
+        _showMessage('El correo electrónico ya se encuentra registrado.');
+      } else {
+        _showMessage('No se pudo registrar la cuenta. Inténtalo de nuevo.');
+      }
+    } on http.ClientException {
+      if (mounted) {
+        _showMessage('No se pudo conectar con el servidor. Revisa tu conexión.');
+      }
+    } on FormatException {
+      if (mounted) {
+        _showMessage('Respuesta no válida del servidor.');
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: GavacColors.primary,
+      ),
+    );
   }
 
   @override
@@ -183,9 +253,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           flex: 1,
           child: Container(
             color: const Color(0xFF6B8E85),
-            child: Stack(
+            child: const Stack(
               children: [
-                const Positioned.fill(
+                Positioned.fill(
                   child: Opacity(
                     opacity: 0.3,
                     child: Image(
@@ -194,16 +264,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
-                const Positioned.fill(
+                Positioned.fill(
                   child: ColoredBox(color: Color(0x33000000)),
                 ),
                 Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(48.0),
+                    padding: EdgeInsets.all(48.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
                           appName,
                           style: TextStyle(

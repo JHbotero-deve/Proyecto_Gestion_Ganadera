@@ -72,16 +72,148 @@ def test_password_reset_changes_password_and_revokes_existing_tokens(client, db_
     ).status_code == 401
     assert client.post(
         "/api/v1/auth/login",
-        json={"email": EMAIL, "password": OLD_PASSWORD},
+        json={
+            "email": EMAIL,
+            "password": OLD_PASSWORD,
+            "captcha_token": "test-token",
+        },
     ).status_code == 401
     assert client.post(
         "/api/v1/auth/login",
-        json={"email": EMAIL, "password": NEW_PASSWORD},
+        json={
+            "email": EMAIL,
+            "password": NEW_PASSWORD,
+            "captcha_token": "test-token",
+        },
     ).status_code == 200
     assert client.post(
         "/api/v1/auth/password-reset/confirm",
         json={"email": EMAIL, "code": code, "new_password": OLD_PASSWORD},
     ).status_code == 400
+
+
+def test_verified_alternate_email_can_receive_and_confirm_password_reset(client, db_session, monkeypatch):
+    register_user(client)
+    user = db_session.scalar(select(User).where(User.email == EMAIL))
+    assert user is not None
+    user.alternate_email = "respaldo@ganadera.com"
+    user.alternate_email_verified_at = datetime.now(timezone.utc)
+    db_session.commit()
+
+    sent = []
+    monkeypatch.setattr(
+        "app.main.send_password_reset_email",
+        lambda recipient, code: sent.append((recipient, code)),
+    )
+    response = client.post(
+        "/api/v1/auth/password-reset/request",
+        json={"email": "respaldo@ganadera.com"},
+    )
+    assert response.status_code == 202
+    assert sent[0][0] == "respaldo@ganadera.com"
+
+    confirmed = client.post(
+        "/api/v1/auth/password-reset/confirm",
+        json={
+            "email": "respaldo@ganadera.com",
+            "code": sent[0][1],
+            "new_password": NEW_PASSWORD,
+        },
+    )
+    assert confirmed.status_code == 204
+
+    login = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "respaldo@ganadera.com",
+            "password": NEW_PASSWORD,
+            "captcha_token": "test-token",
+        },
+    )
+    assert login.status_code == 200
+
+
+def test_unverified_alternate_email_cannot_request_password_reset(client, db_session, monkeypatch):
+    register_user(client)
+    user = db_session.scalar(select(User).where(User.email == EMAIL))
+    assert user is not None
+    user.alternate_email = "pendiente@ganadera.com"
+    db_session.commit()
+
+    sent = []
+    monkeypatch.setattr(
+        "app.main.send_password_reset_email",
+        lambda recipient, code: sent.append((recipient, code)),
+    )
+    response = client.post(
+        "/api/v1/auth/password-reset/request",
+        json={"email": "pendiente@ganadera.com"},
+    )
+
+    assert response.status_code == 202
+    assert sent == []
+
+
+def test_authenticated_user_must_verify_alternate_email_before_use(client, monkeypatch):
+    token = register_user(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    sent = []
+    monkeypatch.setattr(
+        "app.main.send_alternate_email_verification",
+        lambda recipient, code: sent.append((recipient, code)),
+    )
+
+    requested = client.post(
+        "/api/v1/auth/alternate-email/request",
+        json={"email": "respaldo@ganadera.com"},
+        headers=headers,
+    )
+    assert requested.status_code == 202
+    assert sent[0][0] == "respaldo@ganadera.com"
+
+    status_response = client.get("/api/v1/auth/alternate-email", headers=headers)
+    assert status_response.json() == {
+        "email": None,
+        "verified": False,
+        "pending_email": "respaldo@ganadera.com",
+    }
+    confirmed = client.post(
+        "/api/v1/auth/alternate-email/confirm",
+        json={"code": sent[0][1]},
+        headers=headers,
+    )
+    assert confirmed.status_code == 200
+    assert confirmed.json()["verified"] is True
+
+    alternate_login = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "respaldo@ganadera.com",
+            "password": OLD_PASSWORD,
+            "captcha_token": "test-token",
+        },
+    )
+    assert alternate_login.status_code == 200
+
+
+def test_alternate_email_verification_limits_invalid_codes(client, monkeypatch):
+    token = register_user(client)
+    headers = {"Authorization": f"Bearer {token}"}
+    monkeypatch.setattr("app.main.send_alternate_email_verification", lambda *_: None)
+    client.post(
+        "/api/v1/auth/alternate-email/request",
+        json={"email": "respaldo@ganadera.com"},
+        headers=headers,
+    )
+
+    for _ in range(5):
+        response = client.post(
+            "/api/v1/auth/alternate-email/confirm",
+            json={"code": "00000000"},
+            headers=headers,
+        )
+    assert response.status_code == 400
+    assert client.get("/api/v1/auth/alternate-email", headers=headers).json()["verified"] is False
 
 
 def test_password_reset_request_does_not_disclose_unknown_accounts(client, monkeypatch):

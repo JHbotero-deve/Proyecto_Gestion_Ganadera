@@ -1,71 +1,86 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+import pydantic
 
 
-class RegisterIn(BaseModel):
-    nombre: str = Field(min_length=2, max_length=120)
-    email: EmailStr
-    password: str = Field(min_length=10, max_length=128)
+class RegisterIn(pydantic.BaseModel):
+    nombre: str = pydantic.Field(min_length=2, max_length=120)
+    email: pydantic.EmailStr
+    password: str = pydantic.Field(min_length=10, max_length=128)
 
 
-class LoginIn(BaseModel):
-    email: EmailStr
+class LoginIn(pydantic.BaseModel):
+    email: pydantic.EmailStr
     password: str
+    captcha_token: str | None = pydantic.Field(default=None, min_length=1, max_length=4096)
 
 
-class PasswordResetRequest(BaseModel):
-    email: EmailStr
+class AlternateEmailRequest(pydantic.BaseModel):
+    email: pydantic.EmailStr
 
 
-class PasswordResetConfirm(BaseModel):
-    email: EmailStr
-    code: str = Field(pattern=r"^\d{8}$")
-    new_password: str = Field(min_length=10, max_length=128)
+class AlternateEmailConfirm(pydantic.BaseModel):
+    code: str = pydantic.Field(pattern=r"^\d{8}$")
 
 
-class TokenOut(BaseModel):
+class AlternateEmailStatus(pydantic.BaseModel):
+    email: pydantic.EmailStr | None
+    verified: bool
+    pending_email: pydantic.EmailStr | None
+
+
+class PasswordResetRequest(pydantic.BaseModel):
+    email: pydantic.EmailStr
+
+
+class PasswordResetConfirm(pydantic.BaseModel):
+    email: pydantic.EmailStr
+    code: str = pydantic.Field(pattern=r"^\d{8}$")
+    new_password: str = pydantic.Field(min_length=10, max_length=128)
+
+
+class TokenOut(pydantic.BaseModel):
     access_token: str
     token_type: str = "bearer"
 
 
-class UserRead(BaseModel):
+class UserRead(pydantic.BaseModel):
     id: int
     nombre: str
-    email: EmailStr
+    email: pydantic.EmailStr
     role: str
     farm_id: int | None
-    model_config = ConfigDict(from_attributes=True)
+    model_config = pydantic.ConfigDict(from_attributes=True)
 
 
-class FarmCreate(BaseModel):
-    nombre: str = Field(min_length=2, max_length=120)
-    ubicacion: str | None = Field(default=None, max_length=240)
+class FarmCreate(pydantic.BaseModel):
+    nombre: str = pydantic.Field(min_length=2, max_length=120)
+    ubicacion: str | None = pydantic.Field(default=None, max_length=240)
 
 
-class FarmRead(BaseModel):
+class FarmRead(pydantic.BaseModel):
     id: int
     nombre: str
     ubicacion: str | None
-    model_config = ConfigDict(from_attributes=True)
+    model_config = pydantic.ConfigDict(from_attributes=True)
 
 
-class AnimalCreate(BaseModel):
+class AnimalCreate(pydantic.BaseModel):
     farm_id: int
-    identificador: str = Field(min_length=1, max_length=80)
-    nombre: str | None = Field(default=None, max_length=120)
-    especie: str = Field(default="bovino", max_length=80)
-    raza: str | None = Field(default=None, max_length=100)
-    sexo: str | None = Field(default=None, max_length=20)
-    fecha_nacimiento: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    identificador: str = pydantic.Field(min_length=1, max_length=10)
+    nombre: str | None = pydantic.Field(default=None, max_length=60)
+    especie: str = pydantic.Field(default="bovino", max_length=80)
+    raza: str | None = pydantic.Field(default=None, max_length=50)
+    sexo: str | None = pydantic.Field(default=None, max_length=10)
+    fecha_nacimiento: str | None = pydantic.Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
 
 
-class AnimalPatch(BaseModel):
-    nombre: str | None = Field(default=None, max_length=120)
-    raza: str | None = Field(default=None, max_length=100)
-    sexo: str | None = Field(default=None, max_length=20)
-    estado: str | None = Field(default=None, max_length=30)
+class AnimalPatch(pydantic.BaseModel):
+    nombre: str | None = pydantic.Field(default=None, max_length=60)
+    raza: str | None = pydantic.Field(default=None, max_length=50)
+    sexo: str | None = pydantic.Field(default=None, max_length=10)
+    estado: str | None = pydantic.Field(default=None, max_length=30)
 
 
-class AnimalRead(BaseModel):
+class AnimalRead(pydantic.BaseModel):
     id: int
     farm_id: int
     identificador: str
@@ -75,21 +90,21 @@ class AnimalRead(BaseModel):
     sexo: str | None
     fecha_nacimiento: str | None
     estado: str
-    model_config = ConfigDict(from_attributes=True)
+    model_config = pydantic.ConfigDict(from_attributes=True)
 
 
-class EventCreate(BaseModel):
-    tipo: str = Field(min_length=2, max_length=40)
-    fecha: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
-    responsable: str | None = Field(default=None, max_length=120)
-    observaciones: str | None = Field(default=None, max_length=4000)
+class EventCreate(pydantic.BaseModel):
+    tipo: str = pydantic.Field(min_length=2, max_length=40)
+    fecha: str = pydantic.Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+    responsable: str | None = pydantic.Field(default=None, max_length=120)
+    observaciones: str | None = pydantic.Field(default=None, max_length=4000)
 
 
-class EventRead(BaseModel):
+class EventRead(pydantic.BaseModel):
     id: int
     animal_id: int
     tipo: str
     fecha: str
     responsable: str | None
     observaciones: str | None
-    model_config = ConfigDict(from_attributes=True)
+    model_config = pydantic.ConfigDict(from_attributes=True)
