@@ -1,7 +1,17 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../../../../core/theme/gavac_colors.dart';
+import '../../../../core/theme/gavac_theme.dart';
 import '../../../../core/utils/app_session.dart';
+import '../widgets/captcha_widget.dart';
+
+const _apiBaseUrl = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'https://proyectogestionganadera-production.up.railway.app',
+);
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,6 +26,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  String? _captchaToken;
+  VoidCallback? _resetCaptcha;
 
   static const String appName = 'GAVAC';
   static const String appSlogan =
@@ -37,23 +49,187 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin() {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
-
-      // Asignar datos dinámicos a la sesión basados en el correo ingresado
-      final emailText = _emailController.text.trim();
-      final namePart = emailText.isNotEmpty ? emailText.split('@')[0] : 'Propietario';
-      AppSession.userName = namePart[0].toUpperCase() + namePart.substring(1);
-      AppSession.farmName = 'Finca de ${AppSession.userName}';
-
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          setState(() => _isLoading = false);
-          Navigator.pushReplacementNamed(context, '/dashboard');
-        }
-      });
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (kIsWeb && _captchaToken == null) {
+      _showMessage('Completa la verificación reCAPTCHA.');
+      return;
     }
+
+    setState(() => _isLoading = true);
+    try {
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/api/v1/auth/login'),
+        headers: const {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailController.text.trim(),
+          'password': _passwordController.text,
+          if (kIsWeb) 'captcha_token': _captchaToken,
+        }),
+      );
+      if (!mounted) return;
+      if (response.statusCode == 200) {
+        AppSession.accessToken = (jsonDecode(response.body)
+            as Map<String, dynamic>)['access_token'] as String;
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      } else {
+        _resetCaptcha?.call();
+        _showMessage(
+          response.statusCode == 401
+              ? 'Correo o contraseña incorrectos.'
+              : 'No se pudo iniciar sesión. Inténtalo de nuevo.',
+        );
+      }
+    } on http.ClientException {
+      if (mounted) {
+        _showMessage(
+          'No se pudo conectar con el servicio. Inténtalo de nuevo.',
+        );
+      }
+    } on FormatException {
+      if (mounted) {
+        _showMessage(
+          'El servicio respondió con un formato no válido.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Widget _buildCaptcha() => CaptchaWidget(
+        onToken: (token) => setState(() => _captchaToken = token),
+        onResetReady: (reset) => _resetCaptcha = reset,
+      );
+
+  Future<void> _showPasswordResetDialog() async {
+    final emailController =
+        TextEditingController(text: _emailController.text.trim());
+    final codeController = TextEditingController();
+    final passwordController = TextEditingController();
+    var codeSent = false;
+    var busy = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Restablecer contraseña'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    labelText: 'Correo principal o alternativo verificado',
+                  ),
+                ),
+                if (codeSent) ...[
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: codeController,
+                    keyboardType: TextInputType.number,
+                    maxLength: 8,
+                    decoration:
+                        const InputDecoration(labelText: 'Código de 8 dígitos'),
+                  ),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration:
+                        const InputDecoration(labelText: 'Nueva contraseña'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: busy ? null : () => Navigator.pop(dialogContext),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: busy
+                  ? null
+                  : () async {
+                      if (emailController.text.trim().isEmpty) return;
+                      if (codeSent &&
+                          (codeController.text.length != 8 ||
+                              passwordController.text.length < 10)) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Ingresa el código y una contraseña de al menos 10 caracteres.'),
+                          ),
+                        );
+                        return;
+                      }
+                      setDialogState(() => busy = true);
+                      try {
+                        final response = await http.post(
+                          Uri.parse(
+                            '$_apiBaseUrl/api/v1/auth/password-reset/${codeSent ? 'confirm' : 'request'}',
+                          ),
+                          headers: const {'Content-Type': 'application/json'},
+                          body: jsonEncode(
+                            codeSent
+                                ? {
+                                    'email': emailController.text.trim(),
+                                    'code': codeController.text.trim(),
+                                    'new_password': passwordController.text,
+                                  }
+                                : {'email': emailController.text.trim()},
+                          ),
+                        );
+                        if (!context.mounted) return;
+                        if (response.statusCode == 204) {
+                          Navigator.pop(dialogContext);
+                          _showMessage(
+                              'Contraseña restablecida. Ya puedes iniciar sesión.');
+                        } else if (response.statusCode == 202) {
+                          setDialogState(() => codeSent = true);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  'Si el correo está asociado, recibirás un código de verificación.'),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  'No se pudo completar la solicitud. Revisa el código e inténtalo de nuevo.'),
+                            ),
+                          );
+                        }
+                      } on http.ClientException {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    'No se pudo conectar con el servicio.')),
+                          );
+                        }
+                      } finally {
+                        if (context.mounted) setDialogState(() => busy = false);
+                      }
+                    },
+              child: Text(codeSent ? 'Confirmar' : 'Enviar código'),
+            ),
+          ],
+        ),
+      ),
+    );
+    emailController.dispose();
+    codeController.dispose();
+    passwordController.dispose();
   }
 
   @override
@@ -61,8 +237,11 @@ class _LoginScreenState extends State<LoginScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 768;
 
-    return Scaffold(
-      body: isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
+    return Theme(
+      data: GavacTheme.lightTheme,
+      child: Scaffold(
+        body: isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
+      ),
     );
   }
 
@@ -74,9 +253,9 @@ class _LoginScreenState extends State<LoginScreen> {
           flex: 1,
           child: Container(
             color: const Color(0xFF6B8E85),
-            child: Stack(
+            child: const Stack(
               children: [
-                const Positioned.fill(
+                Positioned.fill(
                   child: Opacity(
                     opacity: 0.3,
                     child: Image(
@@ -85,16 +264,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const Positioned.fill(
+                Positioned.fill(
                   child: ColoredBox(color: Color(0x33000000)),
                 ),
                 Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(48.0),
+                    padding: EdgeInsets.all(48.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
                           appName,
                           style: TextStyle(
@@ -160,9 +339,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text(
+                      const Text(
                         welcomeSubtitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           color: Color(0xFF757575),
                         ),
@@ -179,7 +358,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 24),
 
                       _buildPasswordField(),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed:
+                              _isLoading ? null : _showPasswordResetDialog,
+                          child: const Text('¿Olvidaste tu contraseña?'),
+                        ),
+                      ),
                       const SizedBox(height: 32),
+                      if (kIsWeb) ...[
+                        _buildCaptcha(),
+                        const SizedBox(height: 20),
+                      ],
 
                       SizedBox(
                         width: double.infinity,
@@ -284,9 +475,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
+              const Text(
                 welcomeSubtitle,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   color: Color(0xFF757575),
                 ),
@@ -303,7 +494,18 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
 
               _buildPasswordField(),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: _isLoading ? null : _showPasswordResetDialog,
+                  child: const Text('¿Olvidaste tu contraseña?'),
+                ),
+              ),
               const SizedBox(height: 32),
+              if (kIsWeb) ...[
+                _buildCaptcha(),
+                const SizedBox(height: 20),
+              ],
 
               SizedBox(
                 width: double.infinity,
@@ -383,10 +585,12 @@ class _LoginScreenState extends State<LoginScreen> {
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
+          style: const TextStyle(color: GavacColors.textPrimary),
+          cursorColor: GavacColors.primary,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
-            prefixIcon: Icon(prefixIcon, color: const Color(0xFF9E9E9E)),
+            hintStyle: const TextStyle(color: GavacColors.textMuted),
+            prefixIcon: Icon(prefixIcon, color: GavacColors.textMuted),
             filled: true,
             fillColor: const Color(0xFFF8FAFC),
             border: OutlineInputBorder(
@@ -432,17 +636,19 @@ class _LoginScreenState extends State<LoginScreen> {
         TextFormField(
           controller: _passwordController,
           obscureText: _obscurePassword,
+          style: const TextStyle(color: GavacColors.textPrimary),
+          cursorColor: GavacColors.primary,
           decoration: InputDecoration(
             hintText: passwordHint,
-            hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
+            hintStyle: const TextStyle(color: GavacColors.textMuted),
             prefixIcon:
-                const Icon(Icons.lock_outline, color: Color(0xFF9E9E9E)),
+                const Icon(Icons.lock_outline, color: GavacColors.textMuted),
             suffixIcon: IconButton(
               icon: Icon(
                 _obscurePassword
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
-                color: const Color(0xFF9E9E9E),
+                color: GavacColors.textMuted,
               ),
               onPressed: () {
                 setState(() => _obscurePassword = !_obscurePassword);

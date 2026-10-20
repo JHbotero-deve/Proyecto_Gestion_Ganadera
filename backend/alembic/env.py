@@ -3,7 +3,7 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 from app.config import settings
 from app.db import Base
-from app.models import User, Farm, Animal, AnimalEvent  # noqa: F401
+from app.models import User, Farm, Animal, AnimalEvent, PasswordResetCode  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:
