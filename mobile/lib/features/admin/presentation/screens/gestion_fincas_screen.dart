@@ -181,7 +181,7 @@ class _GestionFincasAdminScreenState extends State<GestionFincasAdminScreen> {
                           ),
                           Switch(
                             value: finca.activa,
-                            activeColor: GavacColors.primary,
+                            activeThumbColor: GavacColors.primary,
                             onChanged: (val) {
                               setState(() {
                                 finca.activa = val;

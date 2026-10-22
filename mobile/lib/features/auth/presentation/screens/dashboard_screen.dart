@@ -460,8 +460,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                   colors: [
-                    GavacColors.primary.withOpacity(0.95),
-                    GavacColors.primary.withOpacity(0.6),
+                    GavacColors.primary.withValues(alpha: 0.95),
+                    GavacColors.primary.withValues(alpha: 0.6),
                     Colors.transparent,
                   ],
                 ),
@@ -648,8 +648,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      Row(
-                        children: const [
+                      const Row(
+                        children: [
                           Expanded(flex: 2, child: Text('NOMBRE', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)))),
                           Expanded(flex: 2, child: Text('UBICACIÓN', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)))),
                           Expanded(flex: 1, child: Text('ACCIÓN', textAlign: TextAlign.right, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)))),
@@ -727,8 +727,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      Row(
-                        children: const [
+                      const Row(
+                        children: [
                           Expanded(flex: 2, child: Text('EMAIL / ROL', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)))),
                           Expanded(flex: 2, child: Text('PERMISOS MÓDULOS (BLOQUEO)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)))),
                           Expanded(flex: 1, child: Text('ACCIÓN', textAlign: TextAlign.right, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)))),

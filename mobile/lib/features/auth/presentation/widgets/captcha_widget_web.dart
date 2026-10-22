@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 
 const _siteKey = String.fromEnvironment(
   'RECAPTCHA_SITE_KEY',
-  defaultValue: '6LecqfYtAAAAAKLIGYaf-rWvhp_dKwCDgOMWBkGB',
+  defaultValue: '6LecqfYtAAAAAKLiGYaf-rWvhp_dKwCDgOMWBkGB',
 );
 const _viewType = 'gavac-recaptcha-v2';
 

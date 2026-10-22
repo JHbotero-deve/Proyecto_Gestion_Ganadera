@@ -41,7 +41,7 @@
         for (let i = 0; i < shadowHosts.length; i++) {
           if (shadowHosts[i].shadowRoot) {
             el = shadowHosts[i].shadowRoot.getElementById(targetId) ||
-                 shadowHosts[i].shadowRoot.querySelector("#" + targetId);
+                  shadowHosts[i].shadowRoot.querySelector("#" + targetId);
             if (el) return el;
           }
         }

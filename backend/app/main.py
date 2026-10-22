@@ -70,34 +70,13 @@ def deliver_password_reset_email(email: str, code: str) -> None:
     except (OSError, RuntimeError, smtplib.SMTPException):
         logger.exception("Password reset email delivery failed")
 
-
-def deliver_alternate_email_verification(email: str, code: str) -> None:
-    try:
-        send_alternate_email_verification(email, code)
-    except (OSError, RuntimeError, smtplib.SMTPException):
-        logger.exception("Alternate email verification delivery failed")
-
-
-app = FastAPI(
-    title="Proyecto Gestión Ganadera API",
-    version="0.1.0",
-    description="API RESTful para la gestión ganadera, fincas, animales e historial de eventos.",
-    allow_origins=["http://127.0.0.1:8081", "http://localhost:8081"],
-    allow_credentials=True,
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.allowed_cors_origins or ["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-if settings.allowed_cors_origins:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.allowed_cors_origins,
-        allow_credentials=False,
-        allow_methods=["GET", "POST", "PATCH"],
-        allow_headers=["Authorization", "Content-Type"],
-    )
-
 
 @app.get("/health", tags=["Salud"])
 def health():

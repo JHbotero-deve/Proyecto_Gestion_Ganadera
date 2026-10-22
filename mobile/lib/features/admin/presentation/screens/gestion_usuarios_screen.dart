@@ -17,7 +17,7 @@ class GestionUsuariosAdminScreen extends StatefulWidget {
 
 class _GestionUsuariosAdminScreenState extends State<GestionUsuariosAdminScreen> {
   // Lista inicial vacía (sin datos de prueba)
-  List<AdminUsuarioModel> _usuarios = [];
+  final List<AdminUsuarioModel> _usuarios = [];
 
   final List<String> _rolesDisponibles = ['Administrador', 'Veterinario', 'Trabajador de campo'];
 
@@ -86,7 +86,7 @@ class _GestionUsuariosAdminScreenState extends State<GestionUsuariosAdminScreen>
                   const SizedBox(height: 16),
                   // Dropdown Finca Asignada (HU-003)
                   DropdownButtonFormField<String>(
-                    value: selectedFincaId,
+                    initialValue: selectedFincaId,
                     decoration: const InputDecoration(labelText: 'Finca Asignada'),
                     items: fincasMock.map((f) => DropdownMenuItem(value: f.id, child: Text(f.nombre))).toList(),
                     onChanged: (val) => setDialogState(() => selectedFincaId = val),
@@ -95,7 +95,7 @@ class _GestionUsuariosAdminScreenState extends State<GestionUsuariosAdminScreen>
                   const SizedBox(height: 16),
                   // Dropdown Rol Asignado (HU-003 / HU-004 / CU-012)
                   DropdownButtonFormField<String>(
-                    value: selectedRol,
+                    initialValue: selectedRol,
                     decoration: const InputDecoration(labelText: 'Rol Asignado'),
                     items: _rolesDisponibles.map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
                     onChanged: (val) => setDialogState(() => selectedRol = val),
@@ -105,7 +105,7 @@ class _GestionUsuariosAdminScreenState extends State<GestionUsuariosAdminScreen>
                   SwitchListTile(
                     title: const Text('Estado Activo'),
                     value: estadoActivo,
-                    activeColor: GavacColors.primary,
+                    activeThumbColor: GavacColors.primary,
                     onChanged: (val) => setDialogState(() => estadoActivo = val),
                   ),
                 ],
@@ -192,42 +192,42 @@ class _GestionUsuariosAdminScreenState extends State<GestionUsuariosAdminScreen>
                   title: const Text('Registro'),
                   subtitle: const Text('Permite registrar animales y datos base'),
                   value: tempPermisos['registro'] ?? true,
-                  activeColor: GavacColors.primary,
+                  activeThumbColor: GavacColors.primary,
                   onChanged: (val) => setDialogState(() => tempPermisos['registro'] = val),
                 ),
                 SwitchListTile(
                   title: const Text('Sanidad'),
                   subtitle: const Text('Permite registrar eventos sanitarios y vacunas'),
                   value: tempPermisos['sanidad'] ?? true,
-                  activeColor: GavacColors.primary,
+                  activeThumbColor: GavacColors.primary,
                   onChanged: (val) => setDialogState(() => tempPermisos['sanidad'] = val),
                 ),
                 SwitchListTile(
                   title: const Text('Productividad'),
                   subtitle: const Text('Permite gestionar datos de productividad'),
                   value: tempPermisos['productividad'] ?? true,
-                  activeColor: GavacColors.primary,
+                  activeThumbColor: GavacColors.primary,
                   onChanged: (val) => setDialogState(() => tempPermisos['productividad'] = val),
                 ),
                 SwitchListTile(
                   title: const Text('Reproducción'),
                   subtitle: const Text('Permite gestionar eventos reproductivos'),
                   value: tempPermisos['reproduccion'] ?? true,
-                  activeColor: GavacColors.primary,
+                  activeThumbColor: GavacColors.primary,
                   onChanged: (val) => setDialogState(() => tempPermisos['reproduccion'] = val),
                 ),
                 SwitchListTile(
                   title: const Text('Reportes'),
                   subtitle: const Text('Permite consultar informes y estadísticas'),
                   value: tempPermisos['reportes'] ?? true,
-                  activeColor: GavacColors.primary,
+                  activeThumbColor: GavacColors.primary,
                   onChanged: (val) => setDialogState(() => tempPermisos['reportes'] = val),
                 ),
                 SwitchListTile(
                   title: const Text('Admin'),
                   subtitle: const Text('Permite gestionar fincas y usuarios'),
                   value: tempPermisos['admin'] ?? true,
-                  activeColor: GavacColors.primary,
+                  activeThumbColor: GavacColors.primary,
                   onChanged: (val) => setDialogState(() => tempPermisos['admin'] = val),
                 ),
               ],
@@ -350,7 +350,7 @@ class _GestionUsuariosAdminScreenState extends State<GestionUsuariosAdminScreen>
                           ),
                           Switch(
                             value: user.activo,
-                            activeColor: GavacColors.primary,
+                            activeThumbColor: GavacColors.primary,
                             onChanged: (val) {
                               setState(() {
                                 user.activo = val;
