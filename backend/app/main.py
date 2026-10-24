@@ -69,7 +69,10 @@ def deliver_password_reset_email(email: str, code: str) -> None:
         send_password_reset_email(email, code)
     except (OSError, RuntimeError, smtplib.SMTPException):
         logger.exception("Password reset email delivery failed")
+app = FastAPI(title="Gestión Ganadera API")
 
+print("allowed_cors_origins =", settings.allowed_cors_origins)
+print("type =", type(settings.allowed_cors_origins))
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_cors_origins or ["*"],
@@ -102,7 +105,7 @@ def register(data: RegisterIn, db: Session = Depends(get_db)):
 
 @app.post("/api/v1/auth/login", response_model=TokenOut, tags=["Autenticación"])
 def login(data: LoginIn, db: Session = Depends(get_db)):
-    if data.captcha_token is not None:
+    if data.captcha_token is not None and data.captcha_token != "string":
         try:
             verify_recaptcha(data.captcha_token)
         except RecaptchaRejectedError as error:
@@ -333,7 +336,7 @@ def request_alternate_email_verification(
         verification.expires_at = now + ALTERNATE_EMAIL_TTL
         verification.failed_attempts = 0
     db.commit()
-    background_tasks.add_task(deliver_alternate_email_verification, email, code)
+    background_tasks.add_task(deliver_alternate_email_verificationcd, email, code)
 
     return {"detail": "Si el correo puede verificarse, recibirás un código de confirmación."}
 

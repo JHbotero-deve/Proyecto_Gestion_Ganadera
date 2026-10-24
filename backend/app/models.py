@@ -52,7 +52,7 @@ class Farm(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
-# MODELO GANADO / ANIMALES (Pilar I: Soft-Delete e Indices)
+# MODELO GANADO / ANIMALES
 class Animal(Base):
     __tablename__ = "animals"
 
@@ -96,3 +96,17 @@ class CattleEvent(Base):
     __table_args__ = (
         Index("idx_events_animal_type", "animal_id", "event_type"),
     )
+
+
+# MODELO CÓDIGOS DE RECUPERACIÓN DE CONTRASEÑA
+class PasswordResetCode(Base):
+    __tablename__ = "password_reset_codes"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    email: Mapped[str] = mapped_column(String(150), index=True, nullable=False)
+    code: Mapped[str] = mapped_column(String(6), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+# Alias para mantener compatibilidad con env.py de Alembic
+AnimalEvent = CattleEvent

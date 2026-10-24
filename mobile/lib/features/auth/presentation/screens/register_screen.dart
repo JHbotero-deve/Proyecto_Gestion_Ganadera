@@ -4,10 +4,7 @@ import 'package:http/http.dart' as http;
 import '../../../../core/theme/gavac_colors.dart';
 import '../../../../core/utils/app_session.dart';
 
-const _apiBaseUrl = String.fromEnvironment(
-  'API_BASE_URL',
-  defaultValue: 'https://proyectogestionganadera-production.up.railway.app',
-);
+const _apiBaseUrl = 'http://10.0.2.2:8001';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});

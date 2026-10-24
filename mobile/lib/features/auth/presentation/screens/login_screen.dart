@@ -8,11 +8,7 @@ import '../../../../core/theme/gavac_theme.dart';
 import '../../../../core/utils/app_session.dart';
 import '../widgets/captcha_widget.dart';
 
-const _apiBaseUrl = String.fromEnvironment(
-  'API_BASE_URL',
-  defaultValue: 'https://proyectogestionganadera-production.up.railway.app',
-);
-
+const _apiBaseUrl = 'http://10.0.2.2:8001';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
