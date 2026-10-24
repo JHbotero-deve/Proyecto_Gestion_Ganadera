@@ -1,40 +1,24 @@
-
-from urllib.parse import urlsplit
-
+import os
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-from app.config import settings
+# Cadena de conexión para PostgreSQL con psycopg3
+DATABASE_URL = os.getenv(
+    "DATABASE_URL", 
+    "postgresql+psycopg://ganadero:cambiar_esta_clave_local@db:5432/gestion_ganadera"
+)
 
-
-# Diagnóstico seguro de la conexión
-url = settings.database_url
-parsed = urlsplit(url)
-
-print("DIAGNOSTICO DATABASE_URL")
-print("Variable recibida:", bool(url))
-print("Esquema:", parsed.scheme)
-print("Tiene hostname:", bool(parsed.hostname))
-print("Tiene puerto:", parsed.port is not None if parsed.port else False)
-print("Parece una referencia sin resolver:", "${{" in url)
-
-
-# Configuración de la base de datos
+# Engine configurado con pool de conexiones optimizado para Railway / Docker
 engine = create_engine(
-    settings.database_url,
-    pool_pre_ping=True,
+    DATABASE_URL,
+    pool_pre_ping=True,  # Reconecta automáticamente si Railway cierra conexiones inactivas
+    pool_size=10,        # Número de conexiones estables
+    max_overflow=20      # Conexiones adicionales máximas en picos de tráfico
 )
 
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-)
-
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-
-# Dependencia para obtener una sesión de base de datos
 def get_db():
     db = SessionLocal()
     try:
