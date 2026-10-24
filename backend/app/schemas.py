@@ -1,110 +1,64 @@
-import pydantic
+﻿from datetime import date, datetime
+from typing import Optional, List
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
+# SCHEMAS DE USUARIOS
+class UserBase(BaseModel):
+    email: EmailStr
+    full_name: str
+    role: str = "MAYORDOMO"
 
-class RegisterIn(pydantic.BaseModel):
-    nombre: str = pydantic.Field(min_length=2, max_length=120)
-    email: pydantic.EmailStr
-    password: str = pydantic.Field(min_length=10, max_length=128)
-
-
-class LoginIn(pydantic.BaseModel):
-    email: pydantic.EmailStr
+class UserCreate(UserBase):
     password: str
-    captcha_token: str | None = pydantic.Field(default=None, min_length=1, max_length=4096)
 
-
-class AlternateEmailRequest(pydantic.BaseModel):
-    email: pydantic.EmailStr
-
-
-class AlternateEmailConfirm(pydantic.BaseModel):
-    code: str = pydantic.Field(pattern=r"^\d{8}$")
-
-
-class AlternateEmailStatus(pydantic.BaseModel):
-    email: pydantic.EmailStr | None
-    verified: bool
-    pending_email: pydantic.EmailStr | None
-
-
-class PasswordResetRequest(pydantic.BaseModel):
-    email: pydantic.EmailStr
-
-
-class PasswordResetConfirm(pydantic.BaseModel):
-    email: pydantic.EmailStr
-    code: str = pydantic.Field(pattern=r"^\d{8}$")
-    new_password: str = pydantic.Field(min_length=10, max_length=128)
-
-
-class TokenOut(pydantic.BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
-class UserRead(pydantic.BaseModel):
+class UserResponse(UserBase):
     id: int
-    nombre: str
-    email: pydantic.EmailStr
-    role: str
-    farm_id: int | None
-    model_config = pydantic.ConfigDict(from_attributes=True)
+    is_active: bool
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
 
+# SCHEMAS DE GANADO
+class AnimalBase(BaseModel):
+    tag_id: str = Field(..., max_length=50)
+    name: Optional[str] = Field(None, max_length=100)
+    gender: str = Field(..., pattern="^(MACHO|HEMBRA)$")
+    birth_date: date
+    breed: str = Field(..., max_length=50)
+    color: Optional[str] = Field(None, max_length=50)
+    current_weight: float = Field(..., gt=0)
+    status: str = "ACTIVO"
 
-class FarmCreate(pydantic.BaseModel):
-    nombre: str = pydantic.Field(min_length=2, max_length=120)
-    ubicacion: str | None = pydantic.Field(default=None, max_length=240)
+class AnimalCreate(AnimalBase):
+    finca_id: int
 
+class AnimalUpdate(BaseModel):
+    name: Optional[str] = None
+    color: Optional[str] = None
+    current_weight: Optional[float] = None
+    status: Optional[str] = None
 
-class FarmRead(pydantic.BaseModel):
+class AnimalResponse(AnimalBase):
     id: int
-    nombre: str
-    ubicacion: str | None
-    model_config = pydantic.ConfigDict(from_attributes=True)
+    finca_id: int
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+    model_config = ConfigDict(from_attributes=True)
 
+# SCHEMAS DE EVENTOS
+class EventBase(BaseModel):
+    event_type: str = Field(..., pattern="^(VACUNACION|DESPARASITACION|PESAJE|TRATAMIENTO)$")
+    event_date: date
+    weight: Optional[float] = Field(None, gt=0)
+    description: str = Field(..., max_length=255)
+    withdrawal_days: int = Field(0, ge=0)
 
-class AnimalCreate(pydantic.BaseModel):
-    farm_id: int
-    identificador: str = pydantic.Field(min_length=1, max_length=10)
-    nombre: str | None = pydantic.Field(default=None, max_length=60)
-    especie: str = pydantic.Field(default="bovino", max_length=80)
-    raza: str | None = pydantic.Field(default=None, max_length=50)
-    sexo: str | None = pydantic.Field(default=None, max_length=10)
-    fecha_nacimiento: str | None = pydantic.Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+class EventCreate(EventBase):
+    animal_id: int
 
-
-class AnimalPatch(pydantic.BaseModel):
-    nombre: str | None = pydantic.Field(default=None, max_length=60)
-    raza: str | None = pydantic.Field(default=None, max_length=50)
-    sexo: str | None = pydantic.Field(default=None, max_length=10)
-    estado: str | None = pydantic.Field(default=None, max_length=30)
-
-
-class AnimalRead(pydantic.BaseModel):
-    id: int
-    farm_id: int
-    identificador: str
-    nombre: str | None
-    especie: str
-    raza: str | None
-    sexo: str | None
-    fecha_nacimiento: str | None
-    estado: str
-    model_config = pydantic.ConfigDict(from_attributes=True)
-
-
-class EventCreate(pydantic.BaseModel):
-    tipo: str = pydantic.Field(min_length=2, max_length=40)
-    fecha: str = pydantic.Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
-    responsable: str | None = pydantic.Field(default=None, max_length=120)
-    observaciones: str | None = pydantic.Field(default=None, max_length=4000)
-
-
-class EventRead(pydantic.BaseModel):
+class EventResponse(EventBase):
     id: int
     animal_id: int
-    tipo: str
-    fecha: str
-    responsable: str | None
-    observaciones: str | None
-    model_config = pydantic.ConfigDict(from_attributes=True)
+    performed_by_id: int
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
