@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/gavac_colors.dart';
 import '../../../../core/utils/app_session.dart';
 import 'sanidad_screen.dart';
+import 'animales_screen.dart';
+import 'reproduccion_screen.dart'; // <-- 1. Importación agregada
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -31,9 +33,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _pages = [
       _buildInicioView(),             // 0: Inicio
-      _buildPlaceholder('Animales'),   // 1: Animales
+      const AnimalesScreen(),         // 1: Animales (Conectado)
       const SanidadScreen(),          // 2: Sanidad
-      _buildPlaceholder('Reproducción'),// 3: Reproducción
+      const ReproduccionScreen(),     // 3: Reproducción (Conectado)
       _buildPlaceholder('Producción'),  // 4: Producción
       _buildPlaceholder('Inventario'),  // 5: Inventario
       _buildPlaceholder('Reportes'),    // 6: Reportes
@@ -160,17 +162,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: _handleLogout,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.logout,
                               color: Colors.redAccent,
                               size: 22,
                             ),
-                            const SizedBox(width: 16),
-                            const Text(
+                            SizedBox(width: 16),
+                            Text(
                               'Salir',
                               style: TextStyle(
                                 color: Colors.redAccent,
@@ -328,7 +330,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           // Tarjetas de Estadísticas (KPIs)
           Row(
             children: [
-              _buildStatCard('TOTAL ANIMALES', '0', Icons.grid_view, const Color(0xFF64748B), const Color(0xFFF1F5F9)),
+              _buildStatCard(
+                'TOTAL ANIMALES',
+                '0',
+                Icons.grid_view,
+                const Color(0xFF64748B),
+                const Color(0xFFF1F5F9),
+                onTap: () => setState(() => _selectedIndex = 1), // Conexión a Animales
+              ),
               const SizedBox(width: 24),
               _buildStatCard(
                 'EN SANIDAD',
@@ -336,10 +345,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Icons.shield_outlined,
                 const Color(0xFF10B981),
                 const Color(0xFFD1FAE5),
-                onTap: () => setState(() => _selectedIndex = 2),
+                onTap: () => setState(() => _selectedIndex = 2), // Conexión a Sanidad
               ),
               const SizedBox(width: 24),
-              _buildStatCard('REPRODUCCIÓN', '0', Icons.favorite_border, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
+              _buildStatCard(
+                'REPRODUCCIÓN',
+                '0',
+                Icons.favorite_border,
+                const Color(0xFFEF4444),
+                const Color(0xFFFEE2E2),
+                onTap: () => setState(() => _selectedIndex = 3), // <-- 2. Conexión a Reproducción agregada aquí
+              ),
               const SizedBox(width: 24),
               _buildStatCard('ALERTAS', '0', Icons.warning_amber_rounded, const Color(0xFFF59E0B), const Color(0xFFFEF3C7)),
             ],
