@@ -1,4 +1,4 @@
-﻿# Contrato inicial de API
+# Contrato inicial de API
 
 ## Estado
 Contrato inicial en evolución. Las rutas de recuperación de contraseña descritas aquí están implementadas; las demás rutas siguen sujetas a revisión de su estado en el backend.

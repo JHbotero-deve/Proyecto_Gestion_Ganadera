@@ -1,4 +1,4 @@
-﻿# Arquitectura propuesta
+# Arquitectura propuesta
 
 ## 1. Objetivo
 Definir una arquitectura mantenible para gestionar información ganadera desde web y dispositivos móviles, incluyendo escenarios de conectividad limitada.
