@@ -6,20 +6,36 @@ Plataforma integral para el control de inventario bovino, eventos sanitarios, tr
 
 ## Stack Tecnológico Oficial
 
-- Backend: Python 3.12+ / FastAPI / SQLAlchemy 2.0 (PsychoPy3) / Alembic.
+- Backend: Python 3.12+ / FastAPI / SQLAlchemy 2.0 / Alembic.
 - Base de Datos: PostgreSQL 16 (Containerizado en Railway / Docker Compose).
-- Mobile App: Flutter (Arquitectura limpia con gestor de estado Bloc).
-- Infraestructura: Docker Compose (Desarrollo local) y Railway (Despliegue de produccion).
+- Mobile App: Flutter (Dart) con Material 3 y cliente HTTP adaptativo.
+- Infraestructura: Docker Compose (Desarrollo local) y Railway (Despliegue de producción).
+
+--------------------------------------------------------------------------------
+
+## 🚀 Mejoras y Correcciones Recientes
+
+1. **Corrección de Visibilidad en Pantalla de Registro (`register_screen.dart`)**:
+   - Se añadió un estilo de texto explícito (`color: GavacColors.textPrimary`) en los campos de entrada (`TextFormField`), resolviendo el problema donde las letras typed se volvían invisibles (texto blanco sobre fondo claro).
+   - Se integró `ApiClient.baseUrl` dinámico (`localhost:8001` para Web y `10.0.2.2:8001` para Emulador Android) evitando errores de tiempo de espera (`ERR_CONNECTION_TIMED_OUT`).
+
+2. **Alineación de Modelos Backend y Pydantic (`FastAPI` + `SQLAlchemy`)**:
+   - Corrección de consultas y mapeos en el modelo `Animal` (`finca_id` en lugar de `farm_id`).
+   - Ajuste en los eventos sanitarios (`CattleEvent`) para requerir `event_date`, `performed_by_id` y evitar conflictos con nombres de columnas.
+   - Corrección de la validación reCAPTCHA (`recaptcha.py`) reemplazando el string `'isinstance'` por la función nativa `isinstance()`.
+
+3. **Suite de Pruebas Automatizadas (100% Verde)**:
+   - Actualización de los payloads de prueba (`test_animals.py`, `test_events.py`, `test_extras.py`, `test_security_isolation.py`, `test_migrations.py`) para cumplir estrictamente con los esquemas Pydantic (`AnimalCreate`, `EventCreate`).
+   - Resultado: **38/38 pruebas pasadas exitosamente con `pytest`**.
 
 --------------------------------------------------------------------------------
 
 ## Reglas de Desarrollo y Arquitectura
 
 1. Base de Datos Unificada: Toda la persistencia reside en la instancia PostgreSQL de Railway/Docker. Queda descartado el uso de Supabase.
-2. Inmutabilidad y Trazabilidad (Pilar I): Ningún evento crítico (animales, pesajes, tratamientos) se elimina físicamente (DELETE). Se utiliza soft-delete (deleted_at) o registros de ajuste.
-3. Móvil (Flutter + Bloc):
-   - Flujo unidireccional de datos: Event -> Bloc -> State.
-   - Separación estricta entre capa de UI (Widgets), Lógica de Negocio (Blocs) y Repositorios (Data/API Provider).
+2. Inmutabilidad y Trazabilidad (Pilar I): Ningún evento crítico (animales, pesajes, tratamientos) se elimina físicamente (DELETE). Se utiliza soft-delete (`deleted_at`) o registros de ajuste.
+3. Móvil (Flutter):
+   - Separación estricta entre capa de UI (Widgets), Lógica de Negocio y Repositorios (Data/API Provider).
 4. Boveda de Documentos (Pilar II): Archivos sanitarios e impresiones de hierro se sirven mediante almacenamiento privado con enlaces firmados temporales.
 
 --------------------------------------------------------------------------------
@@ -27,15 +43,18 @@ Plataforma integral para el control de inventario bovino, eventos sanitarios, tr
 ## Inicio Rápido (Entorno Local)
 
 1. Levantar Servicios con Docker:
+   ```bash
    docker-compose up -d --build
-
-- API FastAPI: http://localhost:8001/docs (Puerto local 8001 / 8000 en contenedor).
-- PostgreSQL Local: localhost:5433 (usuario: ganadero, bd: gestion_ganadera).
+   ```
+   - API FastAPI: http://localhost:8001/docs
+   - PostgreSQL Local: localhost:5433 (usuario: `ganadero`, bd: `gestion_ganadera`).
 
 2. Ejecutar Cliente Móvil (Flutter):
+   ```bash
    cd mobile
    flutter pub get
    flutter run
+   ```
 
 --------------------------------------------------------------------------------
 
