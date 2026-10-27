@@ -3,7 +3,7 @@
 Base de código e infraestructura alineada con la documentación formal del proyecto (`docs/`).
 
 ## Stack Tecnológico
-- **Backend:** Python 3.12, FastAPI, SQLAlchemy 2.0, Pydantic v2, PyJWT, Argon2 (pwdlib).
+- **Backend:** Python 3.12, FastAPI, SQLAlchemy 2.0, Pydantic v2, PyJWT, Argon2 (stdlib).
 - **Base de Datos:** PostgreSQL 16 con migraciones de esquema Alembic.
 - **Frontend / Móvil:** Flutter (Dart) con Material 3.
 - **Contenedores:** Docker Compose & Dockerfile multi-stage.
@@ -11,10 +11,11 @@ Base de código e infraestructura alineada con la documentación formal del proy
 ## Inicio Rápido con Docker
 ```bash
 # 1. Crear variables de entorno
+
 cp .env.example .env
 
 # 2. Generar una clave y asignarla a JWT_SECRET_KEY en .env
-python -c "import secrets; print(secrets.token_urlsafe(48))"
+python -c "import secrets; print(secrets.token_url-safe(48))"
 
 # 3. Iniciar contenedores
 docker compose up --build -d
@@ -46,10 +47,11 @@ pip install -r backend/requirements.txt
 pytest backend/tests
 ```
 
+
 ## Migraciones Alembic
 ```bash
 docker compose up --build
 ```
 
-El contenedor aplica `alembic upgrade head` antes de iniciar Uvicorn. Las migraciones deben ser ejecutadas solo por el despliegue, nunca por la suite de pruebas. Para ejecutar Alembic manualmente, configura primero `DATABASE_URL` con la base local correcta; no uses la URL de Railway para pruebas. Si una base existente no tiene la tabla de versiones de Alembic, verifica su esquema y estado antes de migrarla; no marques ni apliques migraciones a ciegas.
+El contenedor aplica `alembic upgrade head` antes de iniciar Unicorn. Las migraciones deben ser ejecutadas solo por el despliegue, nunca por la suite de pruebas. Para ejecutar Alembic manualmente, configura primero `DATABASE_URL` con la base local correcta; no uses la URL de Railway para pruebas. Si una base existente no tiene la tabla de versiones de Alembic, verifica su esquema y estado antes de migrarla; no marques ni apliques migraciones a ciegas.
 ****

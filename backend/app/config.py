@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     jwt_secret_key: SecretStr = Field(min_length=32)
     jwt_expire_minutes: int = Field(default=60, gt=0)
     environment: str = "development"
-    cors_origins: str = ""
+    cors_origins: str ="10.0.2.2"
     recaptcha_secret_key: SecretStr = SecretStr("")
     recaptcha_allowed_hostnames: str = (
         "proyectogestionganadera-production.up.railway.app,localhost,127.0.0.1,testserver"

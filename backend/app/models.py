@@ -39,6 +39,10 @@ class User(Base):
     role: Mapped[UserRole] = mapped_column(default=UserRole.MAYORDOMO, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    token_version: Mapped[int] = mapped_column(default=0, nullable=False)
+    farm_id: Mapped[Optional[int]] = mapped_column(ForeignKey('farms.id', ondelete='SET NULL'), nullable=True)
+    alternate_email: Mapped[Optional[str]] = mapped_column(String(150), unique=True, nullable=True)
+    alternate_email_verified_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
 
 # MODELO FINCAS
@@ -50,6 +54,10 @@ class Farm(Base):
     location: Mapped[Optional[str]] = mapped_column(String(150))
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    token_version: Mapped[int] = mapped_column(default=0, nullable=False)
+    farm_id: Mapped[Optional[int]] = mapped_column(ForeignKey('farms.id', ondelete='SET NULL'), nullable=True)
+    alternate_email: Mapped[Optional[str]] = mapped_column(String(150), unique=True, nullable=True)
+    alternate_email_verified_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
 
 # MODELO GANADO / ANIMALES
@@ -103,10 +111,24 @@ class PasswordResetCode(Base):
     __tablename__ = "password_reset_codes"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    email: Mapped[str] = mapped_column(String(150), index=True, nullable=False)
-    code: Mapped[str] = mapped_column(String(6), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
+    code_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    failed_attempts: Mapped[int] = mapped_column(default=0, nullable=False)
 
+
+class AlternateEmailVerificationCode(Base):
+    __tablename__ = "alternate_email_verification_codes"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    email: Mapped[str] = mapped_column(String(150), nullable=False)
+    code_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    failed_attempts: Mapped[int] = mapped_column(default=0, nullable=False)
 
 # Alias para mantener compatibilidad con env.py de Alembic
 AnimalEvent = CattleEvent
+
+
