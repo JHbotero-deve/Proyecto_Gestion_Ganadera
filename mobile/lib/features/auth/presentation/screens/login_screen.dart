@@ -68,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Uri.parse('$_apiBaseUrl/api/v1/auth/login'),
         headers: const {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'email': _emailController.text.trim(),
+          'email': _emailController.text.trim().replaceAll(' ', ''),
           'password': _passwordController.text,
           if (kIsWeb) 'captcha_token': _captchaToken,
         }),
