@@ -9,8 +9,8 @@ class Settings(BaseSettings):
     database_url: str = Field(min_length=1)
     jwt_secret_key: SecretStr = Field(min_length=32)
     jwt_expire_minutes: int = Field(default=60, gt=0)
-    environment: str = "development"
-    cors_origins: str ="10.0.2.2"
+    environment: str = "production"
+    cors_origins: str = ""
     recaptcha_secret_key: SecretStr = SecretStr("")
     recaptcha_allowed_hostnames: str = (
         "proyectogestionganadera-production.up.railway.app,localhost,127.0.0.1,testserver"
@@ -22,7 +22,8 @@ class Settings(BaseSettings):
     smtp_password: SecretStr = SecretStr("")
     smtp_from_email: str = ""
 
-    model_config = SettingsConfigDict(env_file=(".env", "../.env"), extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=(".env", "../.env"), extra="ignore")
 
     @field_validator("database_url", mode="before")
     @classmethod
@@ -76,17 +77,20 @@ class Settings(BaseSettings):
                 or parsed.query
                 or parsed.fragment
             ):
-                raise ValueError("CORS_ORIGINS debe contener orígenes HTTP(S) exactos, sin rutas ni comodines")
+                raise ValueError(
+                    "CORS_ORIGINS debe contener orígenes HTTP(S) exactos, sin rutas ni comodines")
 
             try:
                 parsed.port
             except ValueError as error:
-                raise ValueError("CORS_ORIGINS contiene un puerto inválido") from error
+                raise ValueError(
+                    "CORS_ORIGINS contiene un puerto inválido") from error
             if parsed.netloc.endswith(":"):
                 raise ValueError("CORS_ORIGINS contiene un puerto vacío")
 
             if parsed.scheme == "http" and hostname.lower() not in {"localhost", "127.0.0.1", "::1"}:
-                raise ValueError("Los orígenes HTTP solo se permiten en loopback")
+                raise ValueError(
+                    "Los orígenes HTTP solo se permiten en loopback")
 
             origins.append(origin.rstrip("/"))
 

@@ -26,8 +26,8 @@ def test_alembic_migrations_upgrade_and_downgrade_on_isolated_sqlite(tmp_path):
     assert scripts.get_heads() == ["8f2c1a6d4e90"]
     merge_revision = scripts.get_revision("8f2c1a6d4e90")
     assert merge_revision.down_revision == "52b9bd4ad7ba"
-    assert "ix_animals_farm_estado" in {index.name for index in Animal.__table__.indexes}
-    assert "ix_animal_events_animal_fecha" in {
+    assert "idx_animal_finca_active" in {index.name for index in Animal.__table__.indexes}
+    assert "idx_events_animal_type" in {
         index.name for index in AnimalEvent.__table__.indexes
     }
 

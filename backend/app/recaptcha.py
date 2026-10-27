@@ -1,4 +1,4 @@
-import httpx
+﻿import httpx
 
 from app.config import settings
 
@@ -37,6 +37,9 @@ def verify_recaptcha(token: str) -> None:
     if (
         result.get("success") is not True
         or not isinstance(hostname, str)
-        or hostname.rstrip(".").lower() not in settings.allowed_recaptcha_hostnames
+        or hostname.strip(".").lower() not in settings.allowed_recaptcha_hostnames
     ):
         raise RecaptchaRejectedError("Google rejected the reCAPTCHA token")
+
+
+
