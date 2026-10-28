@@ -1,110 +1,150 @@
-import pydantic
+from datetime import date, datetime
+from typing import Literal, Optional
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
-class RegisterIn(pydantic.BaseModel):
-    nombre: str = pydantic.Field(min_length=2, max_length=120)
-    email: pydantic.EmailStr
-    password: str = pydantic.Field(min_length=10, max_length=128)
+# AUTENTICACION
+
+class RegisterIn(BaseModel):
+    nombre: str = Field(..., min_length=1, max_length=100)
+    email: EmailStr
+    password: str = Field(..., min_length=8)
 
 
-class LoginIn(pydantic.BaseModel):
-    email: pydantic.EmailStr
+class LoginIn(BaseModel):
+    email: EmailStr
     password: str
-    captcha_token: str | None = pydantic.Field(default=None, min_length=1, max_length=4096)
+    captcha_token: Optional[str] = None
 
 
-class AlternateEmailRequest(pydantic.BaseModel):
-    email: pydantic.EmailStr
-
-
-class AlternateEmailConfirm(pydantic.BaseModel):
-    code: str = pydantic.Field(pattern=r"^\d{8}$")
-
-
-class AlternateEmailStatus(pydantic.BaseModel):
-    email: pydantic.EmailStr | None
-    verified: bool
-    pending_email: pydantic.EmailStr | None
-
-
-class PasswordResetRequest(pydantic.BaseModel):
-    email: pydantic.EmailStr
-
-
-class PasswordResetConfirm(pydantic.BaseModel):
-    email: pydantic.EmailStr
-    code: str = pydantic.Field(pattern=r"^\d{8}$")
-    new_password: str = pydantic.Field(min_length=10, max_length=128)
-
-
-class TokenOut(pydantic.BaseModel):
+class TokenOut(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
 
-class UserRead(pydantic.BaseModel):
+class UserRead(BaseModel):
     id: int
-    nombre: str
-    email: pydantic.EmailStr
+    email: EmailStr
+    full_name: str
     role: str
-    farm_id: int | None
-    model_config = pydantic.ConfigDict(from_attributes=True)
+    is_active: bool
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
 
 
-class FarmCreate(pydantic.BaseModel):
-    nombre: str = pydantic.Field(min_length=2, max_length=120)
-    ubicacion: str | None = pydantic.Field(default=None, max_length=240)
+# FINCAS
+
+class FarmCreate(BaseModel):
+    nombre: str = Field(..., min_length=1, max_length=100)
+    ubicacion: Optional[str] = Field(None, max_length=150)
 
 
-class FarmRead(pydantic.BaseModel):
+class FarmRead(BaseModel):
     id: int
-    nombre: str
-    ubicacion: str | None
-    model_config = pydantic.ConfigDict(from_attributes=True)
+    name: str
+    location: Optional[str] = None
+    owner_id: int
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
 
 
-class AnimalCreate(pydantic.BaseModel):
-    farm_id: int
-    identificador: str = pydantic.Field(min_length=1, max_length=10)
-    nombre: str | None = pydantic.Field(default=None, max_length=60)
-    especie: str = pydantic.Field(default="bovino", max_length=80)
-    raza: str | None = pydantic.Field(default=None, max_length=50)
-    sexo: str | None = pydantic.Field(default=None, max_length=10)
-    fecha_nacimiento: str | None = pydantic.Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+# ANIMALES
+
+Gender = Literal["MACHO", "HEMBRA"]
+AnimalStatus = Literal["ACTIVO", "VENDIDO", "MUERTO", "TRASLADADO"]
 
 
-class AnimalPatch(pydantic.BaseModel):
-    nombre: str | None = pydantic.Field(default=None, max_length=60)
-    raza: str | None = pydantic.Field(default=None, max_length=50)
-    sexo: str | None = pydantic.Field(default=None, max_length=10)
-    estado: str | None = pydantic.Field(default=None, max_length=30)
+class AnimalBase(BaseModel):
+    tag_id: str = Field(..., min_length=1, max_length=50)
+    name: Optional[str] = Field(None, max_length=100)
+    gender: Gender
+    birth_date: date
+    breed: str = Field(..., min_length=1, max_length=50)
+    color: Optional[str] = Field(None, max_length=50)
+    current_weight: float = Field(..., gt=0)
+    status: AnimalStatus = "ACTIVO"
 
 
-class AnimalRead(pydantic.BaseModel):
+class AnimalCreate(AnimalBase):
+    farm_id: int = Field(..., gt=0)
+
+
+class AnimalPatch(BaseModel):
+    name: Optional[str] = Field(None, max_length=100)
+    color: Optional[str] = Field(None, max_length=50)
+    current_weight: Optional[float] = Field(None, gt=0)
+    status: Optional[AnimalStatus] = None
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class AnimalRead(AnimalBase):
     id: int
-    farm_id: int
-    identificador: str
-    nombre: str | None
-    especie: str
-    raza: str | None
-    sexo: str | None
-    fecha_nacimiento: str | None
-    estado: str
-    model_config = pydantic.ConfigDict(from_attributes=True)
+    finca_id: int
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
 
 
-class EventCreate(pydantic.BaseModel):
-    tipo: str = pydantic.Field(min_length=2, max_length=40)
-    fecha: str = pydantic.Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
-    responsable: str | None = pydantic.Field(default=None, max_length=120)
-    observaciones: str | None = pydantic.Field(default=None, max_length=4000)
+# EVENTOS
+
+EventKind = Literal[
+    "VACUNACION",
+    "DESPARASITACION",
+    "PESAJE",
+    "TRATAMIENTO",
+]
 
 
-class EventRead(pydantic.BaseModel):
+class EventBase(BaseModel):
+    event_type: EventKind
+    event_date: date
+    weight: Optional[float] = Field(None, gt=0)
+    description: str = Field(..., min_length=1, max_length=255)
+    withdrawal_days: int = Field(0, ge=0)
+
+
+class EventCreate(EventBase):
+    pass
+
+
+class EventRead(EventBase):
     id: int
     animal_id: int
-    tipo: str
-    fecha: str
-    responsable: str | None
-    observaciones: str | None
-    model_config = pydantic.ConfigDict(from_attributes=True)
+    performed_by_id: int
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# RECUPERACION DE CONTRASENA
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+
+class PasswordResetConfirm(BaseModel):
+    email: EmailStr
+    code: str = Field(..., min_length=8, max_length=8, pattern=r"^[0-9]{8}$")
+    new_password: str = Field(..., min_length=8)
+
+
+# CORREO ALTERNATIVO
+
+class AlternateEmailRequest(BaseModel):
+    email: EmailStr
+
+
+class AlternateEmailConfirm(BaseModel):
+    code: str = Field(..., min_length=8, max_length=8, pattern=r"^[0-9]{8}$")
+
+
+class AlternateEmailStatus(BaseModel):
+    email: Optional[EmailStr] = None
+    verified: bool = False
+    pending_email: Optional[EmailStr] = None

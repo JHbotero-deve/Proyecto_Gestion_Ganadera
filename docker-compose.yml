@@ -1,42 +1,32 @@
-
 services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-gestion_ganadera}
-      POSTGRES_USER: ${POSTGRES_USER:-ganadero}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cambiar_esta_clave_local}
+      POSTGRES_DB: gestion_ganadera
+      POSTGRES_USER: ganadero
+      POSTGRES_PASSWORD: eeba14f899845ba77cd62ce6781ed59019176de3a003c8b8
+      DATABASE_URL: postgresql+psycopg://postgres:eeba14f899845ba77cd62ce6781ed59019176de3a003c8b8@db:5432/gestion_ganadera
+
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
 
   api:
     build: ./backend
     restart: unless-stopped
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://ganadero:cambiar_esta_clave_local@db:5432/gestion_ganadera}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Configura JWT_SECRET_KEY en .env}
-      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-60}
-      ENVIRONMENT: ${ENVIRONMENT:-development}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
+    
+      JWT_EXPIRE_MINUTES: "60"
+      ENVIRONMENT: production
+      CORS_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://localhost:8000"
     ports:
-      - "8000:8000"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
+      - "8001:8000"
 
 volumes:
   postgres_data:

@@ -1,40 +1,30 @@
-
-from urllib.parse import urlsplit
-
+import os
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-from app.config import settings
-
-
-# Diagnóstico seguro de la conexión
-url = settings.database_url
-parsed = urlsplit(url)
-
-print("DIAGNOSTICO DATABASE_URL")
-print("Variable recibida:", bool(url))
-print("Esquema:", parsed.scheme)
-print("Tiene hostname:", bool(parsed.hostname))
-print("Tiene puerto:", parsed.port is not None if parsed.port else False)
-print("Parece una referencia sin resolver:", "${{" in url)
-
-
-# Configuración de la base de datos
-engine = create_engine(
-    settings.database_url,
-    pool_pre_ping=True,
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+psycopg://ganadero:cambiar_esta_clave_local@db:5432/gestion_ganadera"
 )
 
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-)
+# Configuración del motor según la base de datos utilizada.
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+    )
+else:
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,
+        pool_size=10,
+        max_overflow=20,
+    )
 
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
-# Dependencia para obtener una sesión de base de datos
 def get_db():
     db = SessionLocal()
     try:

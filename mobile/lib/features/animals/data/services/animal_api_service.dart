@@ -29,12 +29,14 @@ class AnimalApiService {
   static Future<Map<String, dynamic>> createAnimal(
     String token, {
     required int farmId,
-    required String identificador,
-    String? especie,
-    String? raza,
-    double? pesoActual,
-    String? estadoSalud,
-    String? etapaReproductiva,
+    required String tagId,
+    String? name,
+    required String gender,
+    required String birthDate,
+    required String breed,
+    String? color,
+    required double currentWeight,
+    String status = 'ACTIVO',
   }) async {
     final url = Uri.parse('${ApiClient.baseUrl}/api/v1/animals');
     try {
@@ -46,12 +48,14 @@ class AnimalApiService {
         },
         body: jsonEncode({
           'farm_id': farmId,
-          'identificador': identificador,
-          if (especie != null) 'especie': especie,
-          if (raza != null) 'raza': raza,
-          if (pesoActual != null) 'peso_actual': pesoActual,
-          if (estadoSalud != null) 'estado_salud': estadoSalud,
-          if (etapaReproductiva != null) 'etapa_reproductiva': etapaReproductiva,
+          'tag_id': tagId,
+          if (name != null) 'name': name,
+          'gender': gender,
+          'birth_date': birthDate,
+          'breed': breed,
+          if (color != null) 'color': color,
+          'current_weight': currentWeight,
+          'status': status,
         }),
       );
       final data = jsonDecode(response.body);

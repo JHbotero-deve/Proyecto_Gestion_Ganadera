@@ -8,11 +8,17 @@ import '../../../../core/theme/gavac_theme.dart';
 import '../../../../core/utils/app_session.dart';
 import '../widgets/captcha_widget.dart';
 
-const _apiBaseUrl = String.fromEnvironment(
-  'API_BASE_URL',
-  defaultValue: 'https://proyectogestionganadera-production.up.railway.app',
-);
+import 'dart:io';
 
+String get _apiBaseUrl {
+  if (kIsWeb) {
+    return 'http://localhost:8001';
+  } else if (Platform.isAndroid) {
+    return 'http://10.0.2.2:8001';
+  } else {
+    return 'http://localhost:8001';
+  }
+}
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -259,7 +265,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Opacity(
                     opacity: 0.3,
                     child: Image(
-                      image: AssetImage('assets/imagenes/imagenganado.png'),
+                      image: AssetImage('assets/imagenes/imagen_ganado.png'),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -279,7 +285,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(
                             fontSize: 72,
                             fontWeight: FontWeight.w900,
-                            color: Colors.white,
+                            color: Color.fromARGB(255, 29, 28, 28),
                             letterSpacing: -2,
                             shadows: [
                               Shadow(

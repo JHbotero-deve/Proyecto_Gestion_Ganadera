@@ -1,13 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/gavac_colors.dart';
 import '../../../../core/utils/app_session.dart';
 
-const _apiBaseUrl = String.fromEnvironment(
-  'API_BASE_URL',
-  defaultValue: 'https://proyectogestionganadera-production.up.railway.app',
-);
+String get _apiBaseUrl => ApiClient.baseUrl;
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -417,6 +415,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         TextFormField(
           controller: controller,
           keyboardType: type,
+          style: const TextStyle(color: GavacColors.textPrimary, fontSize: 15),
           decoration: InputDecoration(
               hintText: hint,
               hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
@@ -456,6 +455,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         TextFormField(
           controller: controller,
           obscureText: obscure,
+          style: const TextStyle(color: GavacColors.textPrimary, fontSize: 15),
           decoration: InputDecoration(
               hintText: '••••••••',
               hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),

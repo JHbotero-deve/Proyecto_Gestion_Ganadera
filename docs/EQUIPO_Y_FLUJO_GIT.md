@@ -1,4 +1,4 @@
-﻿# Equipo y flujo de Git
+# Equipo y flujo de Git
 
 ## 1. Responsabilidades
 - Jorge Botero: backend y base de datos.

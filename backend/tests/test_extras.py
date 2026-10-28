@@ -43,7 +43,15 @@ def _crear_finca_y_animal(client, headers, identificador="A-001"):
     farm = client.post("/api/v1/farms", json={"nombre": "La Esperanza"}, headers=headers).json()
     animal = client.post(
         "/api/v1/animals",
-        json={"farm_id": farm["id"], "identificador": identificador},
+        json={
+            "farm_id": farm["id"],
+            "tag_id": identificador,
+            "gender": "HEMBRA",
+            "birth_date": "2023-01-01",
+            "breed": "Holstein",
+            "current_weight": 400.0,
+            "status": "ACTIVO",
+        },
         headers=headers,
     ).json()
     return farm, animal
@@ -54,7 +62,11 @@ def test_summary_cuenta_animales_y_eventos(client_extra):
     farm, animal = _crear_finca_y_animal(client_extra, h)
     client_extra.post(
         f"/api/v1/animals/{animal['id']}/events",
-        json={"tipo": "vacunacion", "fecha": "2026-01-10"},
+        json={
+            "event_type": "VACUNACION",
+            "event_date": "2026-01-10",
+            "description": "Vacuna aftosa",
+        },
         headers=h,
     )
     r = client_extra.get(f"/api/v1/farms/{farm['id']}/summary", headers=h)
@@ -62,7 +74,7 @@ def test_summary_cuenta_animales_y_eventos(client_extra):
     assert r.json() == {
         "farm_id": farm["id"],
         "total_animales": 1,
-        "por_estado": {"activo": 1},
+        "por_estado": {"ACTIVO": 1},
         "total_eventos": 1,
     }
 
