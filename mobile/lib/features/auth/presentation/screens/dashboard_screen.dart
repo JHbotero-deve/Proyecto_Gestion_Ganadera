@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/gavac_colors.dart';
 import '../../../../core/utils/app_session.dart';
 import 'sanidad_screen.dart';
+import 'animales_screen.dart';
 import '../../../admin/presentation/screens/gestion_fincas_screen.dart';
 import '../../../admin/presentation/screens/gestion_usuarios_screen.dart';
 
-const _apiBaseUrl = String.fromEnvironment(
-  'API_BASE_URL',
-  defaultValue: 'https://proyectogestionganadera-production.up.railway.app',
-);
+String get _apiBaseUrl => ApiClient.baseUrl;
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -40,7 +39,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _pages = [
       _buildInicioView(),               // 0: Inicio
-      _buildPlaceholder('Animales'),     // 1: Animales
+      const AnimalesScreen(),           // 1: Animales
       const SanidadScreen(),            // 2: Sanidad
       _buildPlaceholder('Reproducción'),// 3: Reproducción
       _buildPlaceholder('Producción'),    // 4: Producción

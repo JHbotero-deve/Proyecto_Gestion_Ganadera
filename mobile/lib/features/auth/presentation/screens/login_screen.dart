@@ -3,22 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/gavac_colors.dart';
 import '../../../../core/theme/gavac_theme.dart';
 import '../../../../core/utils/app_session.dart';
 import '../widgets/captcha_widget.dart';
 
-import 'dart:io';
-
-String get _apiBaseUrl {
-  if (kIsWeb) {
-    return 'http://localhost:8001';
-  } else if (Platform.isAndroid) {
-    return 'http://10.0.2.2:8001';
-  } else {
-    return 'http://localhost:8001';
-  }
-}
+String get _apiBaseUrl => ApiClient.baseUrl;
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 

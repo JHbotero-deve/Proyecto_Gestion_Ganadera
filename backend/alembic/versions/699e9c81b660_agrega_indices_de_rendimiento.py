@@ -19,10 +19,10 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.create_index("ix_animals_farm_estado", "animals", ["farm_id", "estado"])
-    op.create_index("ix_animal_events_animal_fecha", "animal_events", ["animal_id", "fecha"])
+    op.create_index("ix_animals_finca_status", "animals", ["finca_id", "status"], if_not_exists=True)
+    op.create_index("ix_cattle_events_animal_fecha", "cattle_events", ["animal_id", "event_date"], if_not_exists=True)
 
 
 def downgrade() -> None:
-    op.drop_index("ix_animal_events_animal_fecha", table_name="animal_events")
-    op.drop_index("ix_animals_farm_estado", table_name="animals")
+    op.drop_index("ix_cattle_events_animal_fecha", table_name="cattle_events")
+    op.drop_index("ix_animals_finca_status", table_name="animals")

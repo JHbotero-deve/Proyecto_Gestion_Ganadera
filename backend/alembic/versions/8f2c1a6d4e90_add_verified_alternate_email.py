@@ -16,23 +16,31 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.add_column("users", sa.Column("alternate_email", sa.String(length=255), nullable=True))
-    op.add_column(
-        "users",
-        sa.Column("alternate_email_verified_at", sa.DateTime(timezone=True), nullable=True),
-    )
-    op.create_index("ix_users_alternate_email", "users", ["alternate_email"], unique=True)
-    op.create_table(
-        "alternate_email_verification_codes",
-        sa.Column("user_id", sa.Integer(), nullable=False),
-        sa.Column("email", sa.String(length=255), nullable=False),
-        sa.Column("code_hash", sa.String(length=64), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("failed_attempts", sa.Integer(), server_default="0", nullable=False),
-        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
-        sa.PrimaryKeyConstraint("user_id"),
-    )
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    user_columns = [col['name'] for col in inspector.get_columns('users')]
+
+    if "alternate_email" not in user_columns:
+        op.add_column("users", sa.Column("alternate_email", sa.String(length=255), nullable=True))
+    if "alternate_email_verified_at" not in user_columns:
+        op.add_column(
+            "users",
+            sa.Column("alternate_email_verified_at", sa.DateTime(timezone=True), nullable=True),
+        )
+    op.create_index("ix_users_alternate_email", "users", ["alternate_email"], unique=True, if_not_exists=True)
+
+    if not inspector.has_table("alternate_email_verification_codes"):
+        op.create_table(
+            "alternate_email_verification_codes",
+            sa.Column("user_id", sa.Integer(), nullable=False),
+            sa.Column("email", sa.String(length=255), nullable=False),
+            sa.Column("code_hash", sa.String(length=64), nullable=False),
+            sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+            sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
+            sa.Column("failed_attempts", sa.Integer(), server_default="0", nullable=False),
+            sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
+            sa.PrimaryKeyConstraint("user_id"),
+        )
     op.create_table(
         "health_records",
         sa.Column("id", sa.Integer(), nullable=False),
