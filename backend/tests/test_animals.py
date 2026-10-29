@@ -11,12 +11,14 @@ def test_animal_crud(client):
         "/api/v1/animals",
         json={
             "farm_id": farm_id,
-            "identificador": "CO-101",
-            "nombre": "Mariposa",
-            "especie": "bovino",
-            "raza": "Holstein",
-            "sexo": "hembra",
-            "fecha_nacimiento": "2023-05-10",
+            "tag_id": "CO-101",
+            "name": "Mariposa",
+            "gender": "HEMBRA",
+            "birth_date": "2023-05-10",
+            "breed": "Holstein",
+            "color": "Blanco y Negro",
+            "current_weight": 450.0,
+            "status": "ACTIVO",
         },
         headers=headers,
     )
@@ -25,15 +27,23 @@ def test_animal_crud(client):
 
     dup_res = client.post(
         "/api/v1/animals",
-        json={"farm_id": farm_id, "identificador": "CO-101", "nombre": "Otra Mariposa"},
+        json={
+            "farm_id": farm_id,
+            "tag_id": "CO-101",
+            "name": "Otra Mariposa",
+            "gender": "HEMBRA",
+            "birth_date": "2023-05-10",
+            "breed": "Holstein",
+            "current_weight": 400.0,
+        },
         headers=headers,
     )
     assert dup_res.status_code == 409
 
     get_res = client.get(f"/api/v1/animals/{animal_id}", headers=headers)
     assert get_res.status_code == 200
-    assert get_res.json()["identificador"] == "CO-101"
+    assert get_res.json()["tag_id"] == "CO-101"
 
-    patch_res = client.patch(f"/api/v1/animals/{animal_id}", json={"estado": "vendido"}, headers=headers)
+    patch_res = client.patch(f"/api/v1/animals/{animal_id}", json={"status": "VENDIDO"}, headers=headers)
     assert patch_res.status_code == 200
-    assert patch_res.json()["estado"] == "vendido"
+    assert patch_res.json()["status"] == "VENDIDO"

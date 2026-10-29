@@ -1,4 +1,4 @@
-﻿# Seguridad y protección de datos
+# Seguridad y protección de datos
 
 ## 1. Principios
 - Aplicar mínimo privilegio.

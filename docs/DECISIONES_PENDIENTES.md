@@ -1,4 +1,4 @@
-﻿# Decisiones pendientes
+# Decisiones pendientes
 
 Este documento registra decisiones que el equipo debe discutir y aprobar.
 

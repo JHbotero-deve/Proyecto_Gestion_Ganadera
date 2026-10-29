@@ -39,14 +39,14 @@ class SanidadScreen extends StatefulWidget {
   final Function(Map<String, String>)? onGuardarTratamiento;
 
   const SanidadScreen({
-    Key? key,
+    super.key,
     this.vacunacionPorcentaje = '0.0%',
     this.controlesPendientes = '0',
     this.alertasSanitarias = '0',
     this.registros = const [],
     this.onGuardarVacuna,
     this.onGuardarTratamiento,
-  }) : super(key: key);
+  });
 
   @override
   State<SanidadScreen> createState() => _SanidadScreenState();
@@ -55,6 +55,7 @@ class SanidadScreen extends StatefulWidget {
 class _SanidadScreenState extends State<SanidadScreen> {
   // Colores Oficiales GAVAC Design System
   static const Color primaryColor = Color(0xFF1A3A32); // Deep Forest Green
+  // ignore: unused_field
   static const Color accentColor = Color(0xFF2E5A4D);  // Dark Emerald Accent
   static const Color backgroundColor = Color(0xFFF7F9F7); // Soft Clean Off-White
   static const Color cardColor = Color(0xFFFFFFFF);
@@ -211,7 +212,7 @@ class _SanidadScreenState extends State<SanidadScreen> {
           border: Border.all(color: borderColor),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -366,12 +367,11 @@ class _SanidadScreenState extends State<SanidadScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          widget.registros.isEmpty
-              ? _buildEmptyState()
-              : SingleChildScrollView(
+          if (widget.registros.isEmpty) _buildEmptyState() else SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
-              headingRowColor: MaterialStateProperty.all(backgroundColor),
+              headingRowColor: WidgetStateProperty.all(backgroundColor),
+              // ignore: deprecated_member_use
               dataRowHeight: 64,
               columns: [
                 DataColumn(label: _buildTableHeader('ANIMAL / ARETE')),
@@ -507,16 +507,16 @@ class _SanidadScreenState extends State<SanidadScreen> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         title: Text('Registrar Vacuna (HU-007)', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: primaryColor)),
-        content: Column(
+        content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(decoration: const InputDecoration(labelText: 'Código Animal / Arete', border: OutlineInputBorder())),
-            const SizedBox(height: 12),
-            TextField(decoration: const InputDecoration(labelText: 'Nombre de la Vacuna (Ej: Aftosa, Brucelosis)', border: OutlineInputBorder())),
-            const SizedBox(height: 12),
-            TextField(decoration: const InputDecoration(labelText: 'Dosis (ml)', border: OutlineInputBorder())),
-            const SizedBox(height: 12),
-            TextField(decoration: const InputDecoration(labelText: 'Fecha de Vencimiento / Próximo Ciclo', border: OutlineInputBorder())),
+            TextField(decoration: InputDecoration(labelText: 'Código Animal / Arete', border: OutlineInputBorder())),
+            SizedBox(height: 12),
+            TextField(decoration: InputDecoration(labelText: 'Nombre de la Vacuna (Ej: Aftosa, Brucelosis)', border: OutlineInputBorder())),
+            SizedBox(height: 12),
+            TextField(decoration: InputDecoration(labelText: 'Dosis (ml)', border: OutlineInputBorder())),
+            SizedBox(height: 12),
+            TextField(decoration: InputDecoration(labelText: 'Fecha de Vencimiento / Próximo Ciclo', border: OutlineInputBorder())),
           ],
         ),
         actions: [
@@ -541,16 +541,16 @@ class _SanidadScreenState extends State<SanidadScreen> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         title: Text('Registrar Tratamiento (HU-007)', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: primaryColor)),
-        content: Column(
+        content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(decoration: const InputDecoration(labelText: 'Código Animal / Arete', border: OutlineInputBorder())),
-            const SizedBox(height: 12),
-            TextField(decoration: const InputDecoration(labelText: 'Diagnóstico / Enfermedad', border: OutlineInputBorder())),
-            const SizedBox(height: 12),
-            TextField(decoration: const InputDecoration(labelText: 'Medicamento / Tratamiento', border: OutlineInputBorder())),
-            const SizedBox(height: 12),
-            TextField(decoration: const InputDecoration(labelText: 'Duración (Días) / Vencimiento', border: OutlineInputBorder())),
+            TextField(decoration: InputDecoration(labelText: 'Código Animal / Arete', border: OutlineInputBorder())),
+            SizedBox(height: 12),
+            TextField(decoration: InputDecoration(labelText: 'Diagnóstico / Enfermedad', border: OutlineInputBorder())),
+            SizedBox(height: 12),
+            TextField(decoration: InputDecoration(labelText: 'Medicamento / Tratamiento', border: OutlineInputBorder())),
+            SizedBox(height: 12),
+            TextField(decoration: InputDecoration(labelText: 'Duración (Días) / Vencimiento', border: OutlineInputBorder())),
           ],
         ),
         actions: [

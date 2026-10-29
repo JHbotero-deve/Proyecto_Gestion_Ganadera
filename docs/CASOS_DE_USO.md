@@ -1,4 +1,4 @@
-﻿# Casos de uso — Gestión Ganadera
+# Casos de uso — Gestión Ganadera
 
 ## CU-01. Iniciar sesión
 - El usuario ingresa sus credenciales.

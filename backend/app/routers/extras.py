@@ -33,7 +33,7 @@ def _animal_autorizado(db: Session, user: User, animal_id: int) -> Animal:
     animal = db.get(Animal, animal_id)
     if animal is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Animal no encontrado")
-    _farm_autorizada(db, user, animal.farm_id)
+    _farm_autorizada(db, user, animal.finca_id)
     return animal
 
 
@@ -47,16 +47,16 @@ def farm_summary(farm_id: int, db: Session = Depends(get_db), user: User = Depen
     _farm_autorizada(db, user, farm_id)
 
     filas = db.execute(
-        select(Animal.estado, func.count(Animal.id))
-        .where(Animal.farm_id == farm_id)
-        .group_by(Animal.estado)
+        select(Animal.status, func.count(Animal.id))
+        .where(Animal.finca_id == farm_id)
+        .group_by(Animal.status)
     ).all()
-    por_estado = {estado: total for estado, total in filas}
+    por_estado = {status_val: total for status_val, total in filas}
 
     total_eventos = db.scalar(
         select(func.count(AnimalEvent.id))
         .join(Animal, Animal.id == AnimalEvent.animal_id)
-        .where(Animal.farm_id == farm_id)
+        .where(Animal.finca_id == farm_id)
     ) or 0
 
     return FarmSummary(

@@ -1,4 +1,4 @@
-﻿# Proyecto de Gestión Ganadera
+# Proyecto de Gestión Ganadera
 
 ## 1. Propósito
 
