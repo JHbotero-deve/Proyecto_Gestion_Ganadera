@@ -16,22 +16,32 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.add_column(
-        "users",
-        sa.Column("token_version", sa.Integer(), server_default="0", nullable=False),
-    )
-    op.create_table(
-        "password_reset_codes",
-        sa.Column("user_id", sa.Integer(), nullable=False),
-        sa.Column("code_hash", sa.String(length=64), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("failed_attempts", sa.Integer(), server_default="0", nullable=False),
-        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
-        sa.PrimaryKeyConstraint("user_id"),
-    )
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    columns = [col['name'] for col in inspector.get_columns('users')]
+    if 'token_version' not in columns:
+        op.add_column(
+            "users",
+            sa.Column("token_version", sa.Integer(), server_default="0", nullable=False),
+        )
+    if not inspector.has_table('password_reset_codes'):
+        op.create_table(
+            "password_reset_codes",
+            sa.Column("user_id", sa.Integer(), nullable=False),
+            sa.Column("code_hash", sa.String(length=64), nullable=False),
+            sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+            sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
+            sa.Column("failed_attempts", sa.Integer(), server_default="0", nullable=False),
+            sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
+            sa.PrimaryKeyConstraint("user_id"),
+        )
 
 
 def downgrade() -> None:
-    op.drop_table("password_reset_codes")
-    op.drop_column("users", "token_version")
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    if inspector.has_table('password_reset_codes'):
+        op.drop_table("password_reset_codes")
+    columns = [col['name'] for col in inspector.get_columns('users')]
+    if 'token_version' in columns:
+        op.drop_column("users", "token_version")
