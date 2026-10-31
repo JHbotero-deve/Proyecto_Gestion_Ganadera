@@ -1,3 +1,4 @@
+
 import os
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 os.environ["ENVIRONMENT"] = "test"
@@ -24,7 +25,11 @@ test_engine = create_engine(
     poolclass=StaticPool,
 )
 db_module.engine = test_engine
-db_module.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
+db_module.SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=test_engine,
+)
 
 from app.main import app
 
@@ -42,7 +47,16 @@ def db_session():
         yield session
     finally:
         session.close()
-        Base.metadata.drop_all(bind=test_engine)
+        with test_engine.connect() as connection:
+            connection.exec_driver_sql("PRAGMA foreign_keys=OFF")
+            connection.commit()
+            try:
+                for table in reversed(list(Base.metadata.tables.values())):
+                    table.drop(connection, checkfirst=True)
+                connection.commit()
+            finally:
+                connection.exec_driver_sql("PRAGMA foreign_keys=ON")
+                connection.commit()
 
 
 @pytest.fixture(scope="function")

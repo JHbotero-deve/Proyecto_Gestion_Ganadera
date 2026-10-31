@@ -30,6 +30,7 @@ def upgrade() -> None:
         sa.Column('farm_id', sa.Integer(), nullable=True),
         sa.Column('alternate_email', sa.String(length=150), nullable=True),
         sa.Column('alternate_email_verified_at', sa.DateTime(), nullable=True),
+        *([sa.ForeignKeyConstraint(['farm_id'], ['farms.id'], name='fk_users_farm_id', ondelete='SET NULL')] if op.get_bind().dialect.name == 'sqlite' else []),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('alternate_email'),
         sa.UniqueConstraint('email')
@@ -55,7 +56,8 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_farms_id'), 'farms', ['id'], unique=False)
 
-    op.create_foreign_key('fk_users_farm_id', 'users', 'farms', ['farm_id'], ['id'], ondelete='SET NULL')
+    if op.get_bind().dialect.name != 'sqlite':
+        op.create_foreign_key('fk_users_farm_id', 'users', 'farms', ['farm_id'], ['id'], ondelete='SET NULL')
 
     op.create_table(
         'animals',
@@ -130,10 +132,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_table('alternate_email_verification_codes')
-    op.drop_index(op.f('ix_password_reset_codes_user_id'), table_name='password_reset_codes')
-    op.drop_index(op.f('ix_password_reset_codes_id'), table_name='password_reset_codes')
-    op.drop_table('password_reset_codes')
     op.drop_index('idx_events_animal_type', table_name='cattle_events')
     op.drop_index(op.f('ix_cattle_events_id'), table_name='cattle_events')
     op.drop_index(op.f('ix_cattle_events_animal_id'), table_name='cattle_events')
@@ -145,7 +143,8 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_animals_id'), table_name='animals')
     op.drop_index(op.f('ix_animals_finca_id'), table_name='animals')
     op.drop_table('animals')
-    op.drop_constraint('fk_users_farm_id', 'users', type_='foreignkey')
+    if op.get_bind().dialect.name != 'sqlite':
+        op.drop_constraint('fk_users_farm_id', 'users', type_='foreignkey')
     op.drop_index(op.f('ix_farms_id'), table_name='farms')
     op.drop_table('farms')
     op.drop_index(op.f('ix_users_id'), table_name='users')
