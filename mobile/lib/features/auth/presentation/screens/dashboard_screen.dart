@@ -6,10 +6,15 @@ import '../../../../core/theme/gavac_colors.dart';
 import '../../../../core/utils/app_session.dart';
 import 'sanidad_screen.dart';
 import 'animales_screen.dart';
+ 
+
+import 'reproduccion_screen.dart';
 import '../../../admin/presentation/screens/gestion_fincas_screen.dart';
 import '../../../admin/presentation/screens/gestion_usuarios_screen.dart';
 
 String get _apiBaseUrl => ApiClient.baseUrl;
+
+ 
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -34,20 +39,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   late final List<Widget> _pages;
 
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      _buildInicioView(),               // 0: Inicio
-      const AnimalesScreen(),           // 1: Animales
-      const SanidadScreen(),            // 2: Sanidad
-      _buildPlaceholder('Reproducción'),// 3: Reproducción
-      _buildPlaceholder('Producción'),    // 4: Producción
-      _buildPlaceholder('Inventario'),    // 5: Inventario
-      _buildPlaceholder('Reportes'),      // 6: Reportes
-      _buildAdminHubView(),             // 7: Admin
-    ];
-  }
+ 
+@override
+void initState() {
+  super.initState();
+
+  _pages = [
+    buildInicioView(),                 // 0: Inicio
+    const AnimalesScreen(),            // 1: Animales
+    const SanidadScreen(),             // 2: Sanidad
+    const ReproduccionScreen(),        // 3: Reproducción
+    buildPlaceholder('Producción'),    // 4: Producción
+    buildPlaceholder('Inventario'),    // 5: Inventario
+    buildPlaceholder('Reportes'),      // 6: Reportes
+    buildAdminHubView(),               // 7: Admin
+  ];
+}
+
 
   // Función para cerrar sesión
   void _handleLogout() {
@@ -495,7 +503,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           // Tarjetas de Estadísticas (KPIs)
           Row(
             children: [
-              _buildStatCard('TOTAL ANIMALES', '0', Icons.grid_view, const Color(0xFF64748B), const Color(0xFFF1F5F9)),
+              _buildStatCard(
+                'TOTAL ANIMALES',
+                '0',
+                Icons.grid_view,
+                const Color(0xFF64748B),
+                const Color(0xFFF1F5F9),
+                onTap: () => setState(() => _selectedIndex = 1), // Conexión a Animales
+              ),
               const SizedBox(width: 24),
               _buildStatCard(
                 'EN SANIDAD',
@@ -503,10 +518,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Icons.shield_outlined,
                 const Color(0xFF10B981),
                 const Color(0xFFD1FAE5),
-                onTap: () => setState(() => _selectedIndex = 2),
+                onTap: () => setState(() => _selectedIndex = 2), // Conexión a Sanidad
               ),
               const SizedBox(width: 24),
-              _buildStatCard('REPRODUCCIÓN', '0', Icons.favorite_border, const Color(0xFFEF4444), const Color(0xFFFEE2E2)),
+              _buildStatCard(
+                'REPRODUCCIÓN',
+                '0',
+                Icons.favorite_border,
+                const Color(0xFFEF4444),
+                const Color(0xFFFEE2E2),
+                onTap: () => setState(() => _selectedIndex = 3), // <-- 2. Conexión a Reproducción agregada aquí
+              ),
               const SizedBox(width: 24),
               _buildStatCard('ALERTAS', '0', Icons.warning_amber_rounded, const Color(0xFFF59E0B), const Color(0xFFFEF3C7)),
             ],
