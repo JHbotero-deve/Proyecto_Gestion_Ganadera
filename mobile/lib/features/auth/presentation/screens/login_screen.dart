@@ -256,7 +256,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Opacity(
                     opacity: 0.3,
                     child: Image(
-                      image: AssetImage('assets/imagenes/imagen_ganado.png'),
+                      image: AssetImage('assets/imagenes/imagenlogin.png'),
                       fit: BoxFit.cover,
                     ),
                   ),
