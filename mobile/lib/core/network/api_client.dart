@@ -3,12 +3,14 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class ApiClient {
-  // Configuración automática de URL según el entorno de ejecución:
-  // - Android Emulator: 10.0.2.2 apunta a localhost de tu PC (puerto 8001 mapeado por Docker)
-  // - Web / Desktop: localhost:8001
+  static const _webBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://localhost:8001',
+  );
+
   static String get baseUrl {
     if (kIsWeb) {
-      return 'http://localhost:8001';
+      return _webBaseUrl;
     } else if (defaultTargetPlatform == TargetPlatform.android) {
       return 'http://10.0.2.2:8001';
     } else {
@@ -16,7 +18,6 @@ class ApiClient {
     }
   }
 
-  // Método genérico para hacer POST
   static Future<Map<String, dynamic>> post(
     String endpoint,
     Map<String, dynamic> body, {
@@ -46,7 +47,6 @@ class ApiClient {
     }
   }
 
-  // Método genérico para hacer GET
   static Future<dynamic> get(String endpoint, {String? token}) async {
     final url = Uri.parse('$baseUrl$endpoint');
 
