@@ -36,12 +36,12 @@ def upgrade() -> None:
             sa.PrimaryKeyConstraint("user_id"),
         )
 
-
 def downgrade() -> None:
     bind = op.get_bind()
     inspector = sa.inspect(bind)
-    if inspector.has_table('password_reset_codes'):
+    if inspector.has_table("password_reset_codes"):
         op.drop_table("password_reset_codes")
-    columns = [col['name'] for col in inspector.get_columns('users')]
-    if 'token_version' in columns:
-        op.drop_column("users", "token_version")
+    columns = [col["name"] for col in inspector.get_columns("users")]
+    if "token_version" in columns:
+        with op.batch_alter_table("users") as batch_op:
+            batch_op.drop_column("token_version")

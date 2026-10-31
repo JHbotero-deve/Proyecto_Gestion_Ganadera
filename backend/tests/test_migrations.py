@@ -46,7 +46,7 @@ def test_alembic_migrations_upgrade_and_downgrade_on_isolated_sqlite(tmp_path):
             "users",
             "farms",
             "animals",
-            "animal_events",
+            "cattle_events",
             "password_reset_codes",
             "alternate_email_verification_codes",
             "health_records",
@@ -56,11 +56,11 @@ def test_alembic_migrations_upgrade_and_downgrade_on_isolated_sqlite(tmp_path):
             "inventory_movements",
             "audit_logs",
         } <= set(inspector.get_table_names())
-        assert "ix_animals_farm_estado" in {
+        assert "ix_animals_finca_status" in {
             index["name"] for index in inspector.get_indexes("animals")
         }
-        assert "ix_animal_events_animal_fecha" in {
-            index["name"] for index in inspector.get_indexes("animal_events")
+        assert "ix_cattle_events_animal_fecha" in {
+            index["name"] for index in inspector.get_indexes("cattle_events")
         }
         with engine.connect() as connection:
             current_revision = connection.execute(

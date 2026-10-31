@@ -158,4 +158,3 @@ def downgrade() -> None:
     op.drop_table("alternate_email_verification_codes")
     op.drop_index("ix_users_alternate_email", table_name="users")
     op.drop_column("users", "alternate_email_verified_at")
-    op.drop_column("users", "alternate_email")
