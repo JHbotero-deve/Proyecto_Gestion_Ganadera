@@ -27,12 +27,12 @@ class ReproduccionScreen extends StatefulWidget {
   final List<ReproduccionRecord>? registros;
 
   const ReproduccionScreen({
-    Key? key,
+    super.key,
     this.totalGestantes,
     this.proximasPartoCount,
     this.vaciasCount,
     this.registros,
-  }) : super(key: key);
+  });
 
   @override
   State<ReproduccionScreen> createState() => _ReproduccionScreenState();
@@ -199,7 +199,7 @@ class _ReproduccionScreenState extends State<ReproduccionScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final columns = constraints.maxWidth >= 1100 ? 4 : constraints.maxWidth >= 650 ? 2 : 1;
-        final spacing = 16.0;
+        const spacing = 16.0;
         final cardWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
         return Wrap(
           spacing: spacing,
@@ -224,7 +224,7 @@ class _ReproduccionScreenState extends State<ReproduccionScreen> {
         border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -277,7 +277,7 @@ class _ReproduccionScreenState extends State<ReproduccionScreen> {
         border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -547,7 +547,7 @@ class _ReproduccionScreenState extends State<ReproduccionScreen> {
                 Text('Seleccione el Evento:', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13, color: textMuted)),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: eventoSeleccionado,
+                  initialValue: eventoSeleccionado,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: const Color(0xFFF8FAFC),
