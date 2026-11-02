@@ -811,7 +811,7 @@ void initState() {
   }
 
   // Placeholder para otros módulos de compañeros
-  Widget __buildPlaceholder(String title) {
+  Widget _buildPlaceholder(String title) {
     return Center(
       child: Text(
         'Módulo de $title en desarrollo',
