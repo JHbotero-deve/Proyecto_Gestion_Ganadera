@@ -49,7 +49,7 @@ void initState() {
     const AnimalesScreen(),            // 1: Animales
     const SanidadScreen(),             // 2: Sanidad
     const ReproduccionScreen(),        // 3: Reproducción
-    __buildPlaceholder('Producción'),    // 4: Producción
+    _buildPlaceholder('Producción'),    // 4: Producción
     _buildPlaceholder('Inventario'),    // 5: Inventario
     _buildPlaceholder('Reportes'),      // 6: Reportes
     _buildAdminHubView(),               // 7: Admin
