@@ -151,49 +151,17 @@ class _AnimalesScreenState extends State<AnimalesScreen> {
 
   Widget _buildHeader(BuildContext context, double maxWidth) {
     final isNarrow = maxWidth < 700;
-
     final heading = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
-children: [
-  Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        'HU-006: Registro de Animales',
-        style: GoogleFonts.plusJakartaSans(
-          fontSize: isNarrow ? 22 : 28,
-          fontWeight: FontWeight.w800,
-          color: primaryColor,
+        Text(
+          'HU-006: Registro de Animales',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: isNarrow ? 22 : 28,
+            fontWeight: FontWeight.w800,
+            color: primaryColor,
+          ),
         ),
-      ),
-      const SizedBox(height: 4),
-      Text(
-        'Control individual de ganado mediante chapeta única y sincronización offline/online.',
-        style: GoogleFonts.plusJakartaSans(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: textMuted,
-        ),
-      ),
-    ],
-  ),
-  ElevatedButton.icon(
-    onPressed: () => _mostrarModalRegistrarAnimal(context),
-    style: ElevatedButton.styleFrom(
-      backgroundColor: primaryColor,
-      foregroundColor: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      elevation: 2,
-    ),
-    // Conserva aquí los parámetros restantes del botón original.
-  ),
-]
-
         const SizedBox(height: 6),
         Text(
           'Control individual del ganado mediante chapeta única y sincronización offline/online.',
@@ -205,7 +173,6 @@ children: [
         ),
       ],
     );
-
     final button = ElevatedButton.icon(
       onPressed: () => _mostrarModalRegistrarAnimal(context),
       style: ElevatedButton.styleFrom(
@@ -224,7 +191,6 @@ children: [
         ),
       ),
     );
-
     if (isNarrow) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,7 +201,6 @@ children: [
         ],
       );
     }
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
