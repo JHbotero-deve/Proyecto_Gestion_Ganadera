@@ -31,7 +31,7 @@ jobs:
         with:
           channel: stable
           cache: true
-          cache-dependency-path: mobile/pubspec.lock
+          pub-cache-key: ${{ runner.os }}-pub-${{ hashFiles('mobile/pubspec.lock') }}
 
       - name: Install dependencies
         run: flutter pub get
