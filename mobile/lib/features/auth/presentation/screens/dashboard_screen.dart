@@ -49,9 +49,9 @@ void initState() {
     const AnimalesScreen(),            // 1: Animales
     const SanidadScreen(),             // 2: Sanidad
     const ReproduccionScreen(),        // 3: Reproducción
-    _buildPlaceholder('Producción'),    // 4: Producción
-    buildPlaceholder('Inventario'),    // 5: Inventario
-    buildPlaceholder('Reportes'),      // 6: Reportes
+    __buildPlaceholder('Producción'),    // 4: Producción
+    _buildPlaceholder('Inventario'),    // 5: Inventario
+    _buildPlaceholder('Reportes'),      // 6: Reportes
     _buildAdminHubView(),               // 7: Admin
   ];
 }
@@ -811,7 +811,7 @@ void initState() {
   }
 
   // Placeholder para otros módulos de compañeros
-  Widget _buildPlaceholder(String title) {
+  Widget __buildPlaceholder(String title) {
     return Center(
       child: Text(
         'Módulo de $title en desarrollo',
