@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from app.routers import extras
+from app.routers import extras, social_auth
 
 from app.config import settings
 from app.db import get_db
@@ -135,7 +135,7 @@ def login(data: LoginIn, db: Session = Depends(get_db)):
             )
         )
     )
-    if user is None or not verify_password(data.password, user.hashed_password):
+    if user is None or user.hashed_password is None or not verify_password(data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")
     return TokenOut(access_token=create_access_token(user.id, user.token_version))
@@ -548,3 +548,4 @@ def create_event(animal_id: int, data: EventCreate, db: Session = Depends(get_db
 
 
 app.include_router(extras.router)
+app.include_router(social_auth.router)
