@@ -27,12 +27,12 @@ class ReproduccionScreen extends StatefulWidget {
   final List<ReproduccionRecord>? registros;
 
   const ReproduccionScreen({
-    Key? key,
+    super.key,
     this.totalGestantes,
     this.proximasPartoCount,
     this.vaciasCount,
     this.registros,
-  }) : super(key: key);
+  });
 
   @override
   State<ReproduccionScreen> createState() => _ReproduccionScreenState();
@@ -138,10 +138,9 @@ class _ReproduccionScreenState extends State<ReproduccionScreen> {
 
   // Encabezado del Módulo
   Widget _buildHeader(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final title = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -162,8 +161,8 @@ class _ReproduccionScreenState extends State<ReproduccionScreen> {
               ),
             ),
           ],
-        ),
-        ElevatedButton.icon(
+        );
+        final button = ElevatedButton.icon(
           onPressed: () => _mostrarModalRegistrarEvento(context),
           style: ElevatedButton.styleFrom(
             backgroundColor: primaryColor,
@@ -177,32 +176,39 @@ class _ReproduccionScreenState extends State<ReproduccionScreen> {
             'Registrar Evento',
             style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700),
           ),
-        ),
-      ],
+        );
+        if (constraints.maxWidth < 850) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [title, const SizedBox(height: 16), button],
+          );
+        }
+        return Row(
+          children: [Expanded(child: title), const SizedBox(width: 16), button],
+        );
+      },
     );
   }
 
   // Tarjetas de Métricas KPI basadas en los criterios
   Widget _buildKpiMetricsRow() {
-    int celos = _listaRegistros.where((r) => r.evento == 'Celo').length;
-    int inseminaciones = _listaRegistros.where((r) => r.evento == 'Inseminación').length;
-    int preneces = _listaRegistros.where((r) => r.evento == 'Preñez').length;
-    int partos = _listaRegistros.where((r) => r.evento == 'Parto').length;
-
+    final celos = _listaRegistros.where((r) => r.evento == 'Celo').length;
+    final inseminaciones = _listaRegistros.where((r) => r.evento == 'Inseminación').length;
+    final preneces = _listaRegistros.where((r) => r.evento == 'Preñez').length;
+    final partos = _listaRegistros.where((r) => r.evento == 'Parto').length;
     return LayoutBuilder(
       builder: (context, constraints) {
-        bool isWide = constraints.maxWidth > 1000;
-        return Flex(
-          direction: isWide ? Axis.horizontal : Axis.vertical,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        final columns = constraints.maxWidth >= 1100 ? 4 : constraints.maxWidth >= 650 ? 2 : 1;
+        const spacing = 16.0;
+        final cardWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
           children: [
-            _buildKpiCard('Celos Registrados', '$celos', 'Detección en campo', Icons.notifications_active_outlined, const Color(0xFFEFF6FF), const Color(0xFF2563EB)),
-            SizedBox(height: isWide ? 0 : 16, width: isWide ? 16 : 0),
-            _buildKpiCard('Inseminaciones', '$inseminaciones', 'Servicios aplicados', Icons.science_outlined, const Color(0xFFECFDF5), const Color(0xFF059669)),
-            SizedBox(height: isWide ? 0 : 16, width: isWide ? 16 : 0),
-            _buildKpiCard('Preñeces', '$preneces', 'Diagnósticos positivos', Icons.favorite_rounded, const Color(0xFFFEE2E2), const Color(0xFFEF4444)),
-            SizedBox(height: isWide ? 0 : 16, width: isWide ? 16 : 0),
-            _buildKpiCard('Partos', '$partos', 'Nacimientos registrados', Icons.cake_outlined, const Color(0xFFFEF3C7), const Color(0xFFD97706)),
+            SizedBox(width: cardWidth, child: _buildKpiCard('Celos Registrados', '$celos', 'Detección en campo', Icons.notifications_active_outlined, const Color(0xFFEFF6FF), const Color(0xFF2563EB))),
+            SizedBox(width: cardWidth, child: _buildKpiCard('Inseminaciones', '$inseminaciones', 'Servicios aplicados', Icons.science_outlined, const Color(0xFFECFDF5), const Color(0xFF059669))),
+            SizedBox(width: cardWidth, child: _buildKpiCard('Preñeces', '$preneces', 'Diagnósticos positivos', Icons.favorite_rounded, const Color(0xFFFEE2E2), const Color(0xFFEF4444))),
+            SizedBox(width: cardWidth, child: _buildKpiCard('Partos', '$partos', 'Nacimientos registrados', Icons.cake_outlined, const Color(0xFFFEF3C7), const Color(0xFFD97706))),
           ],
         );
       },
@@ -210,50 +216,50 @@ class _ReproduccionScreenState extends State<ReproduccionScreen> {
   }
 
   Widget _buildKpiCard(String title, String value, String subtitle, IconData icon, Color iconBgColor, Color iconColor) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: borderColor),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
                   title,
                   style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w700, color: textMuted),
                 ),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: iconBgColor, borderRadius: BorderRadius.circular(14)),
-                  child: Icon(icon, color: iconColor, size: 20),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: GoogleFonts.plusJakartaSans(fontSize: 32, fontWeight: FontWeight.w900, color: primaryColor),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w500, color: textMuted),
-            ),
-          ],
-        ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(color: iconBgColor, borderRadius: BorderRadius.circular(14)),
+                child: Icon(icon, color: iconColor, size: 20),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: GoogleFonts.plusJakartaSans(fontSize: 32, fontWeight: FontWeight.w900, color: primaryColor),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w500, color: textMuted),
+          ),
+        ],
       ),
     );
   }
@@ -271,7 +277,7 @@ class _ReproduccionScreenState extends State<ReproduccionScreen> {
         border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -280,15 +286,14 @@ class _ReproduccionScreenState extends State<ReproduccionScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final title = Text(
                 'Historial de Eventos Reproductivos',
                 style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w800, color: primaryColor),
-              ),
-              SizedBox(
-                width: 300,
+              );
+              final search = SizedBox(
+                width: constraints.maxWidth < 900 ? constraints.maxWidth : 300,
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
@@ -297,9 +302,9 @@ class _ReproduccionScreenState extends State<ReproduccionScreen> {
                     prefixIcon: const Icon(Icons.search_rounded, color: primaryColor, size: 20),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
-                      icon: const Icon(Icons.clear_rounded, size: 18, color: textMuted),
-                      onPressed: () => _searchController.clear(),
-                    )
+                            icon: const Icon(Icons.clear_rounded, size: 18, color: textMuted),
+                            onPressed: () => _searchController.clear(),
+                          )
                         : null,
                     filled: true,
                     fillColor: const Color(0xFFF8FAFC),
@@ -309,8 +314,18 @@ class _ReproduccionScreenState extends State<ReproduccionScreen> {
                     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: const BorderSide(color: primaryColor, width: 1.5)),
                   ),
                 ),
-              ),
-            ],
+              );
+              if (constraints.maxWidth < 900) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [title, const SizedBox(height: 12), search],
+                );
+              }
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [Expanded(child: title), const SizedBox(width: 16), search],
+              );
+            },
           ),
           const SizedBox(height: 20),
           registrosMostrados.isEmpty
@@ -482,9 +497,20 @@ class _ReproduccionScreenState extends State<ReproduccionScreen> {
         children: [
           Icon(icon, size: 18, color: accentColor),
           const SizedBox(width: 10),
-          Text('$label:', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, color: textMuted, fontSize: 14)),
-          const Spacer(),
-          Text(value, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: primaryColor, fontSize: 14)),
+          Expanded(
+            child: Text(
+              '$label:',
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, color: textMuted, fontSize: 14),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: primaryColor, fontSize: 14),
+            ),
+          ),
         ],
       ),
     );
@@ -521,7 +547,7 @@ class _ReproduccionScreenState extends State<ReproduccionScreen> {
                 Text('Seleccione el Evento:', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13, color: textMuted)),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: eventoSeleccionado,
+                  initialValue: eventoSeleccionado,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: const Color(0xFFF8FAFC),

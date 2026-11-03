@@ -45,14 +45,14 @@ void initState() {
   super.initState();
 
   _pages = [
-    buildInicioView(),                 // 0: Inicio
+    _buildInicioView(),                 // 0: Inicio
     const AnimalesScreen(),            // 1: Animales
     const SanidadScreen(),             // 2: Sanidad
     const ReproduccionScreen(),        // 3: Reproducción
-    buildPlaceholder('Producción'),    // 4: Producción
-    buildPlaceholder('Inventario'),    // 5: Inventario
-    buildPlaceholder('Reportes'),      // 6: Reportes
-    buildAdminHubView(),               // 7: Admin
+    _buildPlaceholder('Producción'),    // 4: Producción
+    _buildPlaceholder('Inventario'),    // 5: Inventario
+    _buildPlaceholder('Reportes'),      // 6: Reportes
+    _buildAdminHubView(),               // 7: Admin
   ];
 }
 
