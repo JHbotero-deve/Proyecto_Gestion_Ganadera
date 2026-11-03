@@ -42,7 +42,9 @@ class User(Base):
     email: Mapped[str] = mapped_column(
         String(150), unique=True, index=True, nullable=False)
     full_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    hashed_password: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    auth_provider: Mapped[str] = mapped_column(String(20), default="local", server_default="local", nullable=False)
+    provider_subject: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     role: Mapped[UserRole] = mapped_column(
         default=UserRole.MAYORDOMO, nullable=False)
     is_active: Mapped[bool] = mapped_column(
@@ -59,6 +61,7 @@ class User(Base):
         DateTime, nullable=True)
     __table_args__ = (
         Index("ix_users_alternate_email", "alternate_email", unique=True),
+        UniqueConstraint("auth_provider", "provider_subject", name="uq_user_provider_subject"),
     )
 
 
