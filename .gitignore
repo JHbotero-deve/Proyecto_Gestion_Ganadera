@@ -5,6 +5,7 @@
 .venv/
 venv/
 ENV/
+oracleJdk*/
 
 # Python / Pytest / Cache
 __pycache__/

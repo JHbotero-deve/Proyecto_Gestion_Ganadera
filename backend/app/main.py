@@ -1,16 +1,25 @@
 from contextlib import asynccontextmanager
-from fastapi import Depends, FastAPI, HTTPException, status, Query
+from datetime import datetime, timedelta, timezone
+import logging
+import secrets
+import smtplib
+
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.routers import extras
+
 from app.config import settings
 from app.db import Base, engine, get_db
-from app.models import Animal, AnimalEvent, Farm, User
+from app.models import Animal, AnimalEvent, Farm, PasswordResetCode, User
 from app.schemas import (
     RegisterIn,
     LoginIn,
+    PasswordResetRequest,
+    PasswordResetConfirm,
     TokenOut,
     UserRead,
     FarmCreate,
@@ -21,14 +30,32 @@ from app.schemas import (
     EventCreate,
     EventRead,
 )
-from app.security import hash_password, verify_password, create_access_token
+from app.security import hash_password, hash_password_reset_code, verify_password, create_access_token
 from app.deps import current_user
+from app.mailer import send_password_reset_email
+
+
+logger = logging.getLogger(__name__)
+PASSWORD_RESET_RESPONSE = {
+    "detail": "Si el correo está registrado, recibirás instrucciones para recuperar tu contraseña."
+}
+PASSWORD_RESET_INVALID = "El código no es válido o ya venció"
+PASSWORD_RESET_TTL = timedelta(minutes=10)
+PASSWORD_RESET_REQUEST_INTERVAL = timedelta(minutes=1)
+PASSWORD_RESET_MAX_ATTEMPTS = 5
+
+
+def deliver_password_reset_email(email: str, code: str) -> None:
+    try:
+        send_password_reset_email(email, code)
+    except (OSError, RuntimeError, smtplib.SMTPException):
+        logger.exception("Password reset email delivery failed")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Solo arranque rápido de desarrollo. En producción, usar migraciones Alembic.
-    Base.metadata.create_all(bind=engine)
+    if settings.environment == "development":
+        Base.metadata.create_all(bind=engine)
     yield
 
 
@@ -39,13 +66,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-if settings.cors_origins:
+if settings.allowed_cors_origins:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.cors_origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_origins=settings.allowed_cors_origins,
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "PATCH"],
+        allow_headers=["Authorization", "Content-Type"],
     )
 
 
@@ -68,7 +95,7 @@ def register(data: RegisterIn, db: Session = Depends(get_db)):
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="El correo ya está registrado")
-    return TokenOut(access_token=create_access_token(user.id))
+    return TokenOut(access_token=create_access_token(user.id, user.token_version))
 
 
 @app.post("/api/v1/auth/login", response_model=TokenOut, tags=["Autenticación"])
@@ -76,7 +103,109 @@ def login(data: LoginIn, db: Session = Depends(get_db)):
     user = db.scalar(select(User).where(User.email == str(data.email).lower()))
     if user is None or not verify_password(data.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")
-    return TokenOut(access_token=create_access_token(user.id))
+    return TokenOut(access_token=create_access_token(user.id, user.token_version))
+
+
+@app.post(
+    "/api/v1/auth/password-reset/request",
+    status_code=status.HTTP_202_ACCEPTED,
+    tags=["Autenticación"],
+)
+def request_password_reset(
+    data: PasswordResetRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    email = str(data.email).lower()
+    user = db.scalar(
+        select(User)
+        .where(User.email == email)
+        .with_for_update()
+    )
+    if user is None:
+        return PASSWORD_RESET_RESPONSE
+
+    now = datetime.now(timezone.utc)
+    reset = db.scalar(
+        select(PasswordResetCode)
+        .where(PasswordResetCode.user_id == user.id)
+        .with_for_update()
+    )
+    if reset is not None:
+        created_at = reset.created_at
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+        if now - created_at < PASSWORD_RESET_REQUEST_INTERVAL:
+            return PASSWORD_RESET_RESPONSE
+
+    code = f"{secrets.randbelow(100_000_000):08d}"
+    if reset is None:
+        reset = PasswordResetCode(
+            user_id=user.id,
+            code_hash=hash_password_reset_code(user.id, code),
+            created_at=now,
+            expires_at=now + PASSWORD_RESET_TTL,
+            failed_attempts=0,
+        )
+        db.add(reset)
+    else:
+        reset.code_hash = hash_password_reset_code(user.id, code)
+        reset.created_at = now
+        reset.expires_at = now + PASSWORD_RESET_TTL
+        reset.failed_attempts = 0
+    db.commit()
+
+    background_tasks.add_task(deliver_password_reset_email, email, code)
+
+    return PASSWORD_RESET_RESPONSE
+
+
+@app.post(
+    "/api/v1/auth/password-reset/confirm",
+    status_code=status.HTTP_204_NO_CONTENT,
+    tags=["Autenticación"],
+)
+def confirm_password_reset(data: PasswordResetConfirm, db: Session = Depends(get_db)):
+    email = str(data.email).lower()
+    user = db.scalar(
+        select(User)
+        .where(User.email == email)
+        .with_for_update()
+    )
+    reset = (
+        db.scalar(
+            select(PasswordResetCode)
+            .where(PasswordResetCode.user_id == user.id)
+            .with_for_update()
+        )
+        if user is not None
+        else None
+    )
+    if user is None or reset is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=PASSWORD_RESET_INVALID)
+
+    now = datetime.now(timezone.utc)
+    expires_at = reset.expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if now >= expires_at or reset.failed_attempts >= PASSWORD_RESET_MAX_ATTEMPTS:
+        db.delete(reset)
+        db.commit()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=PASSWORD_RESET_INVALID)
+
+    expected_hash = hash_password_reset_code(user.id, data.code)
+    if not secrets.compare_digest(expected_hash, reset.code_hash):
+        reset.failed_attempts += 1
+        if reset.failed_attempts >= PASSWORD_RESET_MAX_ATTEMPTS:
+            db.delete(reset)
+        db.commit()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=PASSWORD_RESET_INVALID)
+
+    user.password_hash = hash_password(data.new_password)
+    user.token_version += 1
+    db.delete(reset)
+    db.commit()
+    return None
 
 
 @app.get("/api/v1/auth/me", response_model=UserRead, tags=["Autenticación"])
@@ -201,3 +330,5 @@ def create_event(animal_id: int, data: EventCreate, db: Session = Depends(get_db
     db.commit()
     db.refresh(event)
     return event
+
+app.include_router(extras.router)
