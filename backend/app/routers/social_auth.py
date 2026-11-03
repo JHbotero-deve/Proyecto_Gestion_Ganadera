@@ -6,9 +6,8 @@ from sqlalchemy.orm import Session
 
 from app.auth_providers import InvalidProviderToken, ProviderIdentity, verify_google, verify_microsoft
 from app.db import get_db
-from app.deps import current_user
 from app.models import User
-from app.schemas import TokenOut, UserRead
+from app.schemas import TokenOut
 from app.security import create_access_token
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Autenticación social"])
@@ -71,8 +70,3 @@ def login_google(data: SocialLoginIn, db: Session = Depends(get_db)):
 def login_microsoft(data: SocialLoginIn, db: Session = Depends(get_db)):
     user = _login_or_create(db, "microsoft", data.id_token)
     return TokenOut(access_token=create_access_token(user.id, user.token_version))
-
-
-@router.get("/social/me", response_model=UserRead)
-def get_social_me(user: User = Depends(current_user)):
-    return user
