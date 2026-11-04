@@ -42,14 +42,31 @@ Plataforma integral para el control de inventario bovino, eventos sanitarios, tr
 
 ## Inicio Rápido (Entorno Local)
 
-1. Levantar Servicios con Docker:
+1. Crear la configuración local (no subir `.env` al repositorio):
+   ```powershell
+   Copy-Item .env.example .env
+   ```
+   Edita `.env`: establece `POSTGRES_PASSWORD` y asigna a `JWT_SECRET_KEY` una clave secreta de al menos 32 caracteres.
+
+2. Construir y levantar los servicios:
    ```bash
-   docker-compose up -d --build
+   docker compose up -d --build
    ```
    - API FastAPI: http://localhost:8001/docs
    - PostgreSQL Local: localhost:5433 (usuario: `ganadero`, bd: `gestion_ganadera`).
+   - El código de `backend/` está montado en el contenedor y Uvicorn usa recarga automática al guardar cambios.
+   - Esta configuración usa el volumen nuevo `postgres_api_data`. La base antigua (puerto 5432 / volumen `postgres_data`) no se modifica ni se migra automáticamente.
 
-2. Ejecutar Cliente Móvil (Flutter):
+3. Reconstruir y recrear los contenedores después de cambios en dependencias o en Docker:
+   ```bash
+   docker compose up -d --build --force-recreate
+   ```
+   Este comando conserva el volumen `postgres_api_data`. No uses `docker compose down -v`, porque eliminaría los datos de la base nueva. La base antigua se conserva aparte. Para revisar el inicio y los errores:
+   ```bash
+   docker compose logs -f api
+   ```
+
+4. Ejecutar Cliente Móvil (Flutter):
    ```bash
    cd mobile
    flutter pub get

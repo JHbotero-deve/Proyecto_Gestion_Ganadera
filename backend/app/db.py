@@ -1,11 +1,9 @@
-import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql+psycopg://ganadero:cambiar_esta_clave_local@db:5432/gestion_ganadera"
-)
+from app.config import settings
+
+DATABASE_URL = settings.database_url
 
 # Configuración del motor según la base de datos utilizada.
 if DATABASE_URL.startswith("sqlite"):
