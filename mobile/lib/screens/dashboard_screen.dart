@@ -1,20 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../../../../core/network/api_client.dart';
-import '../../../../core/theme/gavac_colors.dart';
-import '../../../../core/utils/app_session.dart';
+import '../config/gavac_colors.dart';
+import '../config/app_session.dart';
+import '../services/api_client.dart';
 import 'sanidad_screen.dart';
 import 'animales_screen.dart';
- 
-
 import 'reproduccion_screen.dart';
-import '../../../admin/presentation/screens/gestion_fincas_screen.dart';
-import '../../../admin/presentation/screens/gestion_usuarios_screen.dart';
 
 String get _apiBaseUrl => ApiClient.baseUrl;
-
- 
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -34,28 +28,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     {'icon': Icons.water_drop_outlined, 'label': 'Producción'},
     {'icon': Icons.inventory_2_outlined, 'label': 'Inventario'},
     {'icon': Icons.bar_chart_outlined, 'label': 'Reportes'},
-    {'icon': Icons.admin_panel_settings_outlined, 'label': 'Admin'},
   ];
 
   late final List<Widget> _pages;
 
- 
-@override
-void initState() {
-  super.initState();
-
-  _pages = [
-    _buildInicioView(),                 // 0: Inicio
-    const AnimalesScreen(),            // 1: Animales
-    const SanidadScreen(),             // 2: Sanidad
-    const ReproduccionScreen(),        // 3: Reproducción
-    _buildPlaceholder('Producción'),    // 4: Producción
-    _buildPlaceholder('Inventario'),    // 5: Inventario
-    _buildPlaceholder('Reportes'),      // 6: Reportes
-    _buildAdminHubView(),               // 7: Admin
-  ];
-}
-
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      _buildInicioView(),                 // 0: Inicio
+      const AnimalesScreen(),             // 1: Animales
+      const SanidadScreen(),              // 2: Sanidad
+      const ReproduccionScreen(),         // 3: Reproducción
+      _buildPlaceholder('Producción'),    // 4: Producción
+      _buildPlaceholder('Inventario'),    // 5: Inventario
+      _buildPlaceholder('Reportes'),      // 6: Reportes
+    ];
+  }
 
   // Función para cerrar sesión
   void _handleLogout() {
@@ -98,6 +87,7 @@ void initState() {
     var codeSent = false;
     var verifiedEmail = '';
     var busy = true;
+
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
@@ -264,8 +254,7 @@ void initState() {
                     itemBuilder: (context, index) {
                       final isSelected = index == _selectedIndex;
                       return Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         child: Material(
                           color: isSelected ? Colors.white : Colors.transparent,
                           borderRadius: BorderRadius.circular(12),
@@ -275,27 +264,20 @@ void initState() {
                               setState(() => _selectedIndex = index);
                             },
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               child: Row(
                                 children: [
                                   Icon(
                                     _menuItems[index]['icon'] as IconData,
-                                    color: isSelected
-                                        ? GavacColors.primary
-                                        : Colors.white70,
+                                    color: isSelected ? GavacColors.primary : Colors.white70,
                                     size: 22,
                                   ),
                                   const SizedBox(width: 16),
                                   Text(
                                     _menuItems[index]['label'] as String,
                                     style: TextStyle(
-                                      color: isSelected
-                                          ? GavacColors.primary
-                                          : Colors.white70,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w700
-                                          : FontWeight.w500,
+                                      color: isSelected ? GavacColors.primary : Colors.white70,
+                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                                       fontSize: 15,
                                     ),
                                   ),
@@ -318,8 +300,7 @@ void initState() {
 
                 // Botón de Salir
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   child: Material(
                     color: Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
@@ -330,11 +311,7 @@ void initState() {
                         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.logout,
-                              color: Colors.redAccent,
-                              size: 22,
-                            ),
+                            Icon(Icons.logout, color: Colors.redAccent, size: 22),
                             SizedBox(width: 16),
                             Text(
                               'Salir',
@@ -366,7 +343,7 @@ void initState() {
             ),
           ),
 
-          // CONTENIDO PRINCIPAL CON INDEXEDSTACK (COMPATIBLE CON COMPAÑERO)
+          // CONTENIDO PRINCIPAL CON INDEXEDSTACK
           Expanded(
             child: IndexedStack(
               index: _selectedIndex,
@@ -403,10 +380,7 @@ void initState() {
                   const SizedBox(height: 4),
                   Text(
                     'Resumen general de tu finca',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -489,10 +463,7 @@ void initState() {
                   const SizedBox(height: 8),
                   const Text(
                     'Este es el estado actual de tu\nactivo ganadero hoy.',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ],
               ),
@@ -509,7 +480,7 @@ void initState() {
                 Icons.grid_view,
                 const Color(0xFF64748B),
                 const Color(0xFFF1F5F9),
-                onTap: () => setState(() => _selectedIndex = 1), // Conexión a Animales
+                onTap: () => setState(() => _selectedIndex = 1),
               ),
               const SizedBox(width: 24),
               _buildStatCard(
@@ -518,7 +489,7 @@ void initState() {
                 Icons.shield_outlined,
                 const Color(0xFF10B981),
                 const Color(0xFFD1FAE5),
-                onTap: () => setState(() => _selectedIndex = 2), // Conexión a Sanidad
+                onTap: () => setState(() => _selectedIndex = 2),
               ),
               const SizedBox(width: 24),
               _buildStatCard(
@@ -527,281 +498,15 @@ void initState() {
                 Icons.favorite_border,
                 const Color(0xFFEF4444),
                 const Color(0xFFFEE2E2),
-                onTap: () => setState(() => _selectedIndex = 3), // <-- 2. Conexión a Reproducción agregada aquí
+                onTap: () => setState(() => _selectedIndex = 3),
               ),
               const SizedBox(width: 24),
-              _buildStatCard('ALERTAS', '0', Icons.warning_amber_rounded, const Color(0xFFF59E0B), const Color(0xFFFEF3C7)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Vista de Administración (Índice 7) con el diseño del Mockup
-  Widget _buildAdminHubView() {
-    final List<Map<String, dynamic>> fincasRegistradas = [];
-    final List<Map<String, dynamic>> usuariosRegistrados = [];
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(32.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Superior de Admin
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Administración',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: GavacColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Panel de control maestro y configuración',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-              // Botones de Acción Superior (Mockup)
-              Row(
-                children: [
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const GestionFincasAdminScreen()),
-                      );
-                    },
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Nueva Finca'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: GavacColors.primary,
-                      side: const BorderSide(color: GavacColors.primary, width: 1.5),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      textStyle: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const GestionUsuariosAdminScreen()),
-                      );
-                    },
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Nuevo Usuario'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0D9488),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      textStyle: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const GestionUsuariosAdminScreen()),
-                      );
-                    },
-                    icon: const Icon(Icons.person_add_alt_1, size: 18),
-                    label: const Text('Asignar Personal'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: GavacColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      textStyle: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-
-          // SECCIONES A DOS COLUMNAS
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // COLUMNA 1: Fincas Registradas
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.02),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Fincas Registradas',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: GavacColors.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      const Row(
-                        children: [
-                          Expanded(flex: 2, child: Text('NOMBRE', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)))),
-                          Expanded(flex: 2, child: Text('UBICACIÓN', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)))),
-                          Expanded(flex: 1, child: Text('ACCIÓN', textAlign: TextAlign.right, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)))),
-                        ],
-                      ),
-                      const Divider(height: 24),
-                      fincasRegistradas.isEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 40),
-                              child: Center(
-                                child: Text(
-                                  'No hay fincas registradas',
-                                  style: TextStyle(color: Colors.grey[500], fontSize: 14),
-                                ),
-                              ),
-                            )
-                          : ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: fincasRegistradas.length,
-                              itemBuilder: (context, index) {
-                                final finca = fincasRegistradas[index];
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  child: Row(
-                                    children: [
-                                      Expanded(flex: 2, child: Text(finca['nombre'], style: const TextStyle(fontWeight: FontWeight.w600, color: GavacColors.textPrimary))),
-                                      Expanded(flex: 2, child: Text(finca['ubicacion'], style: const TextStyle(color: GavacColors.textSecondary))),
-                                      Expanded(
-                                        flex: 1,
-                                        child: Align(
-                                          alignment: Alignment.centerRight,
-                                          child: TextButton(
-                                            onPressed: () {},
-                                            child: const Text('GESTIONAR', style: TextStyle(fontWeight: FontWeight.w700, color: GavacColors.primary, fontSize: 13)),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 24),
-
-              // COLUMNA 2: Gestión de Usuarios y Permisos
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.02),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Gestión de Usuarios y Permisos',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: GavacColors.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      const Row(
-                        children: [
-                          Expanded(flex: 2, child: Text('EMAIL / ROL', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)))),
-                          Expanded(flex: 2, child: Text('PERMISOS MÓDULOS (BLOQUEO)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)))),
-                          Expanded(flex: 1, child: Text('ACCIÓN', textAlign: TextAlign.right, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)))),
-                        ],
-                      ),
-                      const Divider(height: 24),
-                      usuariosRegistrados.isEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 40),
-                              child: Center(
-                                child: Text(
-                                  'No hay usuarios registrados',
-                                  style: TextStyle(color: Colors.grey[500], fontSize: 14),
-                                ),
-                              ),
-                            )
-                          : ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: usuariosRegistrados.length,
-                              itemBuilder: (context, index) {
-                                final user = usuariosRegistrados[index];
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  child: Row(
-                                    children: [
-                                      Expanded(flex: 2, child: Text(user['email'], style: const TextStyle(fontWeight: FontWeight.w600, color: GavacColors.textPrimary))),
-                                      Expanded(flex: 2, child: Text(user['permisos'], style: const TextStyle(color: GavacColors.textSecondary))),
-                                      Expanded(
-                                        flex: 1,
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.end,
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.grey),
-                                              onPressed: () {},
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
-                                              onPressed: () {},
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                    ],
-                  ),
-                ),
+              _buildStatCard(
+                'ALERTAS',
+                '0',
+                Icons.warning_amber_rounded,
+                const Color(0xFFF59E0B),
+                const Color(0xFFFEF3C7),
               ),
             ],
           ),

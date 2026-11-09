@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../../../../core/network/api_client.dart';
+import 'api_client.dart';
 
 class FarmApiService {
   // GET /api/v1/farms

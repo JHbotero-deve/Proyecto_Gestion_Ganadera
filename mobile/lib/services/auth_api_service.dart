@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../../../../core/network/api_client.dart';
+import 'api_client.dart';
 
 class AuthApiService {
   // POST /api/v1/auth/login

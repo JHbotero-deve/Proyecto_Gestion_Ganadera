@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../../../../core/network/api_client.dart';
+import 'api_client.dart';
 
 class AnimalApiService {
   // GET /api/v1/animals

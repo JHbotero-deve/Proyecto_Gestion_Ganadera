@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'core/theme/gavac_theme.dart';
-import 'features/auth/presentation/screens/login_screen.dart';
-import 'features/auth/presentation/screens/dashboard_screen.dart';
-import 'features/auth/presentation/screens/register_screen.dart';
+import 'config/gavac_theme.dart';
+import 'screens/login_screen.dart';
+import 'screens/dashboard_screen.dart';
+import 'screens/register_screen.dart';
+import 'screens/admin_dashboard_screen.dart';
 
 void main() {
   runApp(const GAVACApp());
@@ -24,6 +25,7 @@ class GAVACApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(), 
         '/dashboard': (context) => const DashboardScreen(),
+        '/admin': (context) => const AdminDashboardScreen(),
       },
     );
   }

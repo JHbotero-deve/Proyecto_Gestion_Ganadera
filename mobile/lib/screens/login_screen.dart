@@ -1,15 +1,13 @@
-
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../../../../core/network/api_client.dart';
-import '../../../../core/theme/gavac_colors.dart';
-import '../../../../core/theme/gavac_theme.dart';
-import '../../../../core/utils/app_session.dart';
-import '../widgets/captcha_widget.dart';
+import '../config/gavac_colors.dart';
+import '../config/gavac_theme.dart';
+import '../config/app_session.dart';
+import '../services/api_client.dart';
 
 String get _apiBaseUrl => ApiClient.baseUrl;
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -23,8 +21,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
-  String? _captchaToken;
-  VoidCallback? _resetCaptcha;
 
   static const String appName = 'GAVAC';
   static const String appSlogan =
@@ -48,10 +44,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
-    if (kIsWeb && _captchaToken == null) {
-      _showMessage('Completa la verificación reCAPTCHA.');
-      return;
-    }
 
     setState(() => _isLoading = true);
     try {
@@ -61,7 +53,6 @@ class _LoginScreenState extends State<LoginScreen> {
         body: jsonEncode({
           'email': _emailController.text.trim().replaceAll(' ', ''),
           'password': _passwordController.text,
-          if (kIsWeb) 'captcha_token': _captchaToken,
         }),
       );
       if (!mounted) return;
@@ -70,7 +61,6 @@ class _LoginScreenState extends State<LoginScreen> {
             as Map<String, dynamic>)['access_token'] as String;
         Navigator.pushReplacementNamed(context, '/dashboard');
       } else {
-        _resetCaptcha?.call();
         _showMessage(
           response.statusCode == 401
               ? 'Correo o contraseña incorrectos.'
@@ -98,11 +88,6 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
   }
-
-  Widget _buildCaptcha() => CaptchaWidget(
-        onToken: (token) => setState(() => _captchaToken = token),
-        onResetReady: (reset) => _resetCaptcha = reset,
-      );
 
   Future<void> _showPasswordResetDialog() async {
     final emailController =
@@ -364,10 +349,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      if (kIsWeb) ...[
-                        _buildCaptcha(),
-                        const SizedBox(height: 20),
-                      ],
 
                       SizedBox(
                         width: double.infinity,
@@ -405,7 +386,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      // ✅ CAMBIO INTEGRADO: Navegación al Registro (Escritorio)
                       Center(
                         child: TextButton(
                           onPressed: () {
@@ -499,10 +479,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              if (kIsWeb) ...[
-                _buildCaptcha(),
-                const SizedBox(height: 20),
-              ],
 
               SizedBox(
                 width: double.infinity,
@@ -538,7 +514,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 20),
 
-              // ✅ CAMBIO INTEGRADO: Navegación al Registro (Móvil)
               Center(
                 child: TextButton(
                   onPressed: () {
@@ -626,7 +601,6 @@ class _LoginScreenState extends State<LoginScreen> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: GavacColors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
