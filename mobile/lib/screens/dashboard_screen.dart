@@ -7,6 +7,7 @@ import '../services/api_client.dart';
 import 'sanidad_screen.dart';
 import 'animales_screen.dart';
 import 'reproduccion_screen.dart';
+import 'administracion_screen.dart';
 
 String get _apiBaseUrl => ApiClient.baseUrl;
 
@@ -28,6 +29,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     {'icon': Icons.water_drop_outlined, 'label': 'Producción'},
     {'icon': Icons.inventory_2_outlined, 'label': 'Inventario'},
     {'icon': Icons.bar_chart_outlined, 'label': 'Reportes'},
+    {'icon': Icons.admin_panel_settings_outlined, 'label': 'Admin'},
   ];
 
   late final List<Widget> _pages;
@@ -43,6 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _buildPlaceholder('Producción'),    // 4: Producción
       _buildPlaceholder('Inventario'),    // 5: Inventario
       _buildPlaceholder('Reportes'),      // 6: Reportes
+      const AdministracionScreen(),       // 7: Admin
     ];
   }
 

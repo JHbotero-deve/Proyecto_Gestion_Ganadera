@@ -57,8 +57,38 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       if (!mounted) return;
       if (response.statusCode == 200) {
-        AppSession.accessToken = (jsonDecode(response.body)
-            as Map<String, dynamic>)['access_token'] as String;
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final token = data['access_token'] as String;
+        AppSession.accessToken = token;
+
+        // Obtener datos del usuario logueado (/me)
+        try {
+          final meResponse = await http.get(
+            Uri.parse('$_apiBaseUrl/api/v1/auth/me'),
+            headers: {'Authorization': 'Bearer $token'},
+          );
+          if (meResponse.statusCode == 200) {
+            final meData = jsonDecode(meResponse.body) as Map<String, dynamic>;
+            AppSession.userName = meData['full_name'] as String? ?? meData['email'] ?? 'Usuario';
+          }
+        } catch (_) {}
+
+        // Obtener fincas asociadas (/farms)
+        try {
+          final farmsResponse = await http.get(
+            Uri.parse('$_apiBaseUrl/api/v1/farms'),
+            headers: {'Authorization': 'Bearer $token'},
+          );
+          if (farmsResponse.statusCode == 200) {
+            final farmsList = jsonDecode(farmsResponse.body) as List<dynamic>;
+            if (farmsList.isNotEmpty) {
+              final firstFarm = farmsList.first as Map<String, dynamic>;
+              AppSession.farmName = firstFarm['nombre'] as String? ?? firstFarm['name'] as String? ?? 'Mi Finca';
+            }
+          }
+        } catch (_) {}
+
+        if (!mounted) return;
         Navigator.pushReplacementNamed(context, '/dashboard');
       } else {
         _showMessage(

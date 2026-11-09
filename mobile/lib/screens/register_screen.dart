@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../config/gavac_colors.dart';
+import '../config/gavac_theme.dart';
 import '../config/app_session.dart';
 import '../services/api_client.dart';
 
@@ -123,8 +124,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 768;
 
-    return Scaffold(
-      body: isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
+    return Theme(
+      data: GavacTheme.lightTheme,
+      child: Scaffold(
+        body: isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
+      ),
     );
   }
 
@@ -157,11 +161,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         style: TextStyle(fontSize: 16, color: Color(0xFF757575)),
                       ),
                       const SizedBox(height: 32),
-                      _buildTextField('Nombre completo', 'Juan Pérez', _nombreController, Icons.person_outline),
+                      _buildTextField('Nombre completo', 'Ingresa tu nombre completo', _nombreController, Icons.person_outline),
                       const SizedBox(height: 20),
-                      _buildTextField('Correo electrónico', 'juan@finca.com', _emailController, Icons.email_outlined, TextInputType.emailAddress),
+                      _buildTextField('Correo electrónico', 'correo@ejemplo.com', _emailController, Icons.email_outlined, TextInputType.emailAddress),
                       const SizedBox(height: 20),
-                      _buildTextField('Nombre de la finca', 'Finca La Esperanza', _fincaController, Icons.agriculture_outlined),
+                      _buildTextField('Nombre de la finca', 'Nombre de tu finca', _fincaController, Icons.agriculture_outlined),
                       const SizedBox(height: 20),
                       _buildPasswordField('Contraseña', _passwordController, _obscurePassword, () => setState(() => _obscurePassword = !_obscurePassword)),
                       const SizedBox(height: 20),
@@ -201,19 +205,65 @@ class _RegisterScreenState extends State<RegisterScreen> {
           flex: 1,
           child: Container(
             color: const Color(0xFF6B8E85),
-            child: const Center(
-              child: Padding(
-                padding: EdgeInsets.all(48.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(appName, style: TextStyle(fontSize: 72, fontWeight: FontWeight.w900, color: Colors.white)),
-                    SizedBox(height: 16),
-                    Text(appSlogan, style: TextStyle(fontSize: 20, color: Colors.white)),
-                  ],
+            child: const Stack(
+              children: [
+                Positioned.fill(
+                  child: Opacity(
+                    opacity: 0.3,
+                    child: Image(
+                      image: AssetImage('assets/imagenes/imagenganado.png'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
-              ),
+                Positioned.fill(
+                  child: ColoredBox(color: Color(0x33000000)),
+                ),
+                Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(48.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          appName,
+                          style: TextStyle(
+                            fontSize: 72,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: -2,
+                            shadows: [
+                              Shadow(
+                                color: Color(0x80000000),
+                                offset: Offset(0, 4),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          appSlogan,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.white,
+                            height: 1.4,
+                            shadows: [
+                              Shadow(
+                                color: Color(0x80000000),
+                                offset: Offset(0, 2),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -235,11 +285,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 8),
               const Text('Completa tus datos para comenzar.', style: TextStyle(fontSize: 14, color: Color(0xFF757575))),
               const SizedBox(height: 32),
-              _buildTextField('Nombre completo', 'Juan Pérez', _nombreController, Icons.person_outline),
+              _buildTextField('Nombre completo', 'Ingresa tu nombre completo', _nombreController, Icons.person_outline),
               const SizedBox(height: 16),
-              _buildTextField('Correo electrónico', 'juan@finca.com', _emailController, Icons.email_outlined, TextInputType.emailAddress),
+              _buildTextField('Correo electrónico', 'correo@ejemplo.com', _emailController, Icons.email_outlined, TextInputType.emailAddress),
               const SizedBox(height: 16),
-              _buildTextField('Nombre de la finca', 'Finca La Esperanza', _fincaController, Icons.agriculture_outlined),
+              _buildTextField('Nombre de la finca', 'Nombre de tu finca', _fincaController, Icons.agriculture_outlined),
               const SizedBox(height: 16),
               _buildPasswordField('Contraseña', _passwordController, _obscurePassword, () => setState(() => _obscurePassword = !_obscurePassword)),
               const SizedBox(height: 16),
@@ -277,7 +327,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
         TextFormField(
           controller: controller,
           keyboardType: type,
-          decoration: InputDecoration(hintText: hint, prefixIcon: Icon(icon, color: const Color(0xFF9E9E9E))),
+          style: const TextStyle(color: GavacColors.textPrimary),
+          cursorColor: GavacColors.primary,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(color: GavacColors.textMuted),
+            prefixIcon: Icon(icon, color: GavacColors.textMuted),
+            filled: true,
+            fillColor: const Color(0xFFF8FAFC),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: GavacColors.primary, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          ),
           validator: (v) => (v == null || v.isEmpty) ? 'Campo obligatorio' : null,
         ),
       ],
@@ -293,10 +364,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
         TextFormField(
           controller: controller,
           obscureText: obscure,
+          style: const TextStyle(color: GavacColors.textPrimary),
+          cursorColor: GavacColors.primary,
           decoration: InputDecoration(
             hintText: '••••••••',
-            prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF9E9E9E)),
-            suffixIcon: IconButton(icon: Icon(obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined), onPressed: toggle),
+            hintStyle: const TextStyle(color: GavacColors.textMuted),
+            prefixIcon: const Icon(Icons.lock_outline, color: GavacColors.textMuted),
+            suffixIcon: IconButton(icon: Icon(obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined, color: GavacColors.textMuted), onPressed: toggle),
+            filled: true,
+            fillColor: const Color(0xFFF8FAFC),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: GavacColors.primary, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
           validator: (v) => (v == null || v.isEmpty) ? 'Campo obligatorio' : (v.length < 6 ? 'Mínimo 6 caracteres' : null),
         ),
